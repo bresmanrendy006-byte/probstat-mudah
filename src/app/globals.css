@@ -37,3 +37,35 @@ h1, h2, h3 { font-family: var(--font-display); }
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
 }
+
+/* ===== Animasi tambahan ===== */
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(40px, -30px) scale(1.1); }
+  66% { transform: translate(-30px, 30px) scale(0.95); }
+}
+
+@keyframes melayang {
+  0%, 100% { transform: translateY(0) rotate(var(--r, 0deg)); }
+  50% { transform: translateY(-24px) rotate(calc(var(--r, 0deg) + 8deg)); }
+}
+
+@keyframes kilau {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 300% 50%; }
+}
+
+.teks-kilau {
+  background-image: linear-gradient(
+    90deg,
+    var(--color-brand),
+    var(--color-mint),
+    var(--color-sun),
+    var(--color-brand)
+  );
+  background-size: 300% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: kilau 6s linear infinite;
+} 

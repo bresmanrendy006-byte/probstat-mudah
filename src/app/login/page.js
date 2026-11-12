@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 const isian = "mt-1 w-full rounded-xl border-2 border-ink px-3 py-2.5 bg-paper";
 
 export default function Login() {
@@ -31,8 +33,11 @@ export default function Login() {
           </button>
         </div>
 
-        <p className="mt-5 text-sm text-ink/60 text-center">
-          Belum punya akun? <span className="font-semibold text-brand">Daftar</span>
+        <p className="mt-5 text-center text-sm text-ink/70">
+          Belum punya akun?{" "}
+          <Link href="/daftar" className="font-bold text-brand underline">
+            Daftar di sini
+          </Link>
         </p>
       </div>
 
