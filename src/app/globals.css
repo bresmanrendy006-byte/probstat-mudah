@@ -1,16 +1,32 @@
 @import "tailwindcss";
 
 @theme {
-  --color-ink: #1f2350;
-  --color-brand: #3b3fd8;
-  --color-mint: #14a38b;
-  --color-sun: #f5b82e;
-  --color-paper: #f6f7fb;
+  /* ===== Palet pastel hangat ===== */
+  --color-ink: #2b2d5b;       /* teks utama & sidebar admin */
+  --color-brand: #5b5ed6;     /* aksen utama (tombol, tautan) */
+  --color-mint: #6fd1bb;
+  --color-sun: #ffd166;       /* kuning mentega */
+  --color-paper: #fdf8f3;     /* latar krem */
+
+  /* Warna pastel tambahan (mulai dipakai di tahap berikutnya) */
+  --color-peach: #ffc9a8;
+  --color-rose: #ffc6d9;
+  --color-lavender: #e4e4fb;
+
+  /* Warna garis lembut (dipakai jembatan border di bawah) */
+  --color-garis: #9c9ed0;
 
   --font-display: var(--font-bricolage), ui-sans-serif, sans-serif;
   --font-sans: var(--font-figtree), ui-sans-serif, sans-serif;
 
-  --shadow-hard: 4px 4px 0 0 var(--color-ink);
+  /* Sudut lebih bulat */
+  --radius-lg: 0.75rem;
+  --radius-xl: 1.125rem;
+  --radius-2xl: 1.5rem;
+  --radius-3xl: 2rem;
+
+  /* Nama lama dipertahankan agar komponen lama tidak rusak, tapi bayangannya kini lembut */
+  --shadow-hard: 0 10px 28px -10px rgb(43 45 91 / 0.28), 0 2px 6px -2px rgb(43 45 91 / 0.12);
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-rise: rise 0.6s ease-out both;
@@ -28,14 +44,38 @@
 body {
   font-family: var(--font-sans);
   background-color: var(--color-paper);
-  background-image: radial-gradient(rgb(31 35 80 / 0.12) 1px, transparent 1px);
-  background-size: 22px 22px;
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
 }
 
 h1, h2, h3 { font-family: var(--font-display); }
 
+@layer base {
+  /* Fokus keyboard yang jelas di seluruh situs (komponen boleh menimpanya) */
+  :focus-visible {
+    outline: 3px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: color-mix(in srgb, var(--color-brand) 25%, white);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html { scroll-behavior: smooth; }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * { animation: none !important; transition: none !important; }
+}
+
+/* ===== JEMBATAN SEMENTARA =====
+   Mengubah semua border gelap lama (border-ink) menjadi lavender lembut
+   tanpa menyentuh tiap komponen. Hapus blok ini setelah semua komponen
+   dirapikan satu per satu. */
+.border-ink {
+  border-color: var(--color-garis);
 }
 
 /* ===== Animasi tambahan ===== */
@@ -59,8 +99,8 @@ h1, h2, h3 { font-family: var(--font-display); }
   background-image: linear-gradient(
     90deg,
     var(--color-brand),
-    var(--color-mint),
-    var(--color-sun),
+    #c05fd0,
+    #f08a5d,
     var(--color-brand)
   );
   background-size: 300% 100%;
@@ -68,4 +108,35 @@ h1, h2, h3 { font-family: var(--font-display); }
   background-clip: text;
   color: transparent;
   animation: kilau 6s linear infinite;
-} 
+}
+
+/* ===== Skeleton loading: kilau lembut ===== */
+@keyframes shimmer {
+  0% { background-position: 150% 0; }
+  100% { background-position: -150% 0; }
+}
+
+@layer components {
+  .skeleton {
+    background-color: var(--color-lavender);
+    background-image: linear-gradient(
+      100deg,
+      transparent 25%,
+      rgb(255 255 255 / 0.75) 50%,
+      transparent 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  /* Untuk skeleton di atas latar gelap */
+  .skeleton-gelap {
+    background-color: rgb(255 255 255 / 0.14);
+    background-image: linear-gradient(
+      100deg,
+      transparent 25%,
+      rgb(255 255 255 / 0.22) 50%,
+      transparent 75%
+    );
+  }
+}

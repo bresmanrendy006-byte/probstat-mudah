@@ -1,6 +1,9 @@
 "use client";
 
 // src/components/KartuMiring.js
+// Kartu yang sedikit miring mengikuti kursor (hanya mouse) + kilau lembut di bawah kursor.
+// Dipakai di Beranda dan daftar materi. Efek miring mati bila pengguna memilih reduced-motion.
+
 import { useRef } from "react";
 
 export default function KartuMiring({ children, className = "", maks = 8 }) {
@@ -8,6 +11,7 @@ export default function KartuMiring({ children, className = "", maks = 8 }) {
 
   function gerak(e) {
     if (e.pointerType !== "mouse") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     const el = ref.current;
     if (!el) return;
     const r = el.getBoundingClientRect();
@@ -27,14 +31,14 @@ export default function KartuMiring({ children, className = "", maks = 8 }) {
       ref={ref}
       onPointerMove={gerak}
       onPointerLeave={keluar}
-      className={`group relative overflow-hidden rounded-2xl border-2 border-ink bg-white p-5 shadow-hard transition-transform duration-200 ease-out will-change-transform ${className}`}
+      className={`group relative overflow-hidden rounded-3xl border border-brand/10 bg-white p-5 shadow-hard transition-[transform,box-shadow] duration-200 ease-out will-change-transform hover:shadow-[0_22px_44px_-16px_rgba(43,45,91,0.4)] ${className}`}
     >
       <div
         aria-hidden="true"
         className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-200 group-hover:opacity-100"
         style={{
           background:
-            "radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(245,184,46,0.28), transparent 55%)",
+            "radial-gradient(circle at var(--mx, 50%) var(--my, 50%), rgba(255,201,168,0.45), transparent 55%)",
         }}
       />
       <div className="relative">{children}</div>

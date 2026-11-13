@@ -4,6 +4,7 @@
 // Urutan tampil di halaman Materi diatur di daftarBab.js, bukan di sini.
 
 import { materiProbabilitas } from "./materiProbabilitas";
+import { materiStatistika } from "./materiStatistika";
 
 const t = String.raw;
 
@@ -66,7 +67,7 @@ const peluangSuatuKejadian = {
   ],
 };
 
-export const daftarMateri = [peluangSuatuKejadian, ...materiProbabilitas];
+export const daftarMateri = [peluangSuatuKejadian, ...materiProbabilitas, ...materiStatistika];
 
 export function cariMateri(slug) {
   return daftarMateri.find((m) => m.slug === slug);

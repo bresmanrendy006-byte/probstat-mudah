@@ -1,15 +1,11 @@
 // src/app/loading.js
-// Skeleton Beranda: urutan dan bentuknya sama dengan page.js (hero, 3 kartu fitur, kotak gelap).
+// Skeleton Beranda: hero, kartu dadu, 3 kartu fitur, kotak gelap "Mulai dari mana?".
 
-import Skeleton from "@/components/Skeleton";
+import Skeleton, { KARTU } from "@/components/Skeleton";
 
 export default function LoadingBeranda() {
   return (
-    <div
-      role="status"
-      aria-label="Memuat halaman"
-      className="space-y-16"
-    >
+    <div role="status" aria-label="Memuat halaman" className="space-y-16">
       {/* Hero */}
       <section className="grid items-center gap-10 py-10 md:grid-cols-2 md:py-16">
         <div>
@@ -35,7 +31,7 @@ export default function LoadingBeranda() {
         </div>
 
         {/* Kartu dadu */}
-        <div className="mx-auto w-full max-w-sm rounded-2xl border-2 border-ink bg-white p-8 shadow-hard">
+        <div className={`${KARTU} mx-auto w-full max-w-sm p-8`}>
           <Skeleton className="mx-auto h-5 w-40" />
           <Skeleton className="mx-auto mt-4 size-24" />
           <Skeleton className="mx-auto mt-3 h-4 w-32" />
@@ -45,13 +41,10 @@ export default function LoadingBeranda() {
 
       {/* Tiga kartu fitur */}
       <section>
-        <Skeleton className="h-9 w-72" />
+        <Skeleton className="h-9 w-72 max-w-full" />
         <div className="mt-6 grid gap-5 md:grid-cols-3">
           {[1, 2, 3].map((n) => (
-            <div
-              key={n}
-              className="rounded-2xl border-2 border-ink bg-white p-5 shadow-hard"
-            >
+            <div key={n} className={`${KARTU} p-5`}>
               <Skeleton className="size-10" />
               <Skeleton className="mt-4 h-6 w-1/2" />
               <Skeleton className="mt-3 h-4 w-full" />
@@ -64,7 +57,7 @@ export default function LoadingBeranda() {
 
       {/* Kotak gelap "Mulai dari mana?" */}
       <section className="rounded-2xl border-2 border-ink bg-ink p-8">
-        <div className="h-7 w-48 animate-pulse rounded-xl bg-white/25" />
+        <Skeleton gelap className="h-7 w-48" />
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {[1, 2].map((n) => (
             <div key={n} className="rounded-xl bg-white p-5">

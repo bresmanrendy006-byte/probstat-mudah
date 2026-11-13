@@ -1,16 +1,17 @@
 // src/app/materi/loading.js
-// Skeleton daftar Materi: judul, kolom cari + 3 tombol filter, 2 kategori berisi kartu bab (6 dan 5).
+// Skeleton daftar Materi: judul, kolom cari + 3 chip filter, baris keterangan,
+// lalu 2 kategori berisi kartu bab (6 dan 5).
 // Halaman isi bab punya skeleton sendiri di materi/[slug]/loading.js.
 
-import Skeleton from "@/components/Skeleton";
+import Skeleton, { KARTU } from "@/components/Skeleton";
 
 function KartuBab() {
   return (
-    <div className="rounded-2xl border-2 border-ink bg-white p-5 shadow-hard">
-      <Skeleton className="h-6 w-20 rounded-full" />
+    <div className={`${KARTU} p-5`}>
+      <Skeleton className="h-7 w-20 rounded-full" />
       <Skeleton className="mt-3 h-5 w-full" />
       <Skeleton className="mt-2 h-5 w-2/3" />
-      <Skeleton className="mt-3 h-4 w-20" />
+      <Skeleton className="mt-3 h-5 w-20" />
     </div>
   );
 }
@@ -32,10 +33,11 @@ export default function LoadingMateri() {
   return (
     <div role="status" aria-label="Memuat materi">
       <Skeleton className="h-10 w-40" />
-      <Skeleton className="mt-3 h-5 w-64 max-w-full" />
+      <Skeleton className="mt-2 h-6 w-64 max-w-full" />
 
+      {/* Kolom cari + chip filter */}
       <div className="mt-6 flex flex-wrap items-center gap-3">
-        <Skeleton className="h-[46px] min-w-48 flex-1" />
+        <Skeleton className="h-12 min-w-48 flex-1" />
         <div className="flex gap-2">
           <Skeleton className="h-10 w-20 rounded-full" />
           <Skeleton className="h-10 w-14 rounded-full" />
@@ -43,7 +45,10 @@ export default function LoadingMateri() {
         </div>
       </div>
 
-      <div className="mt-10 space-y-10">
+      {/* Baris keterangan di bawah filter */}
+      <Skeleton className="mt-3 h-5 w-72 max-w-full" />
+
+      <div className="mt-6 space-y-10">
         <Kategori judul="w-40" jumlah={6} />
         <Kategori judul="w-48" jumlah={5} />
       </div>

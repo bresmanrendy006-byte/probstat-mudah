@@ -16,17 +16,17 @@ const susunan = [
       "aturan-penjumlahan",
       "peluang-bersyarat",
       "aturan-perkalian",
-      { slug: "teorema-bayes", judul: "Teorema Bayes", tingkat: "Mahasiswa" },
+      "teorema-bayes",
     ],
   },
   {
     kategori: "Statistika Dasar",
     materi: [
-      { slug: "pengertian-statistika", judul: "Pengertian statistika dan statistik", tingkat: "SMA" },
-      { slug: "jenis-data-dan-skala", judul: "Jenis data dan skala pengukuran", tingkat: "SMA" },
-      { slug: "ukuran-pemusatan", judul: "Ukuran pemusatan", tingkat: "SMA" },
-      { slug: "ukuran-penyebaran", judul: "Ukuran penyebaran", tingkat: "Mahasiswa" },
-      { slug: "input-data-spss", judul: "Input data ke SPSS", tingkat: "Mahasiswa" },
+      "pengertian-statistika",
+      "jenis-data-dan-skala",
+      "ukuran-pemusatan",
+      "ukuran-penyebaran",
+      "input-data-spss",
     ],
   },
 ];

@@ -1,5 +1,6 @@
 // src/components/ContohSoal.js
-// Satu contoh soal lengkap: Soal, Diketahui, Ditanya, Rumus, Langkah, Jawaban.
+// Satu contoh soal: Soal, Diketahui, Ditanya, Rumus, Langkah, Jawaban.
+// Diketahui, Ditanya, dan Rumus boleh dihilangkan; bagian itu otomatis tidak ditampilkan.
 
 import Teks from "./Teks";
 
@@ -21,25 +22,31 @@ export default function ContohSoal({ nomor, data }) {
       <p className="mt-3 text-lg font-semibold">{data.soal}</p>
 
       <div className="mt-4 space-y-4 text-sm">
-        <Bagian judul="Diketahui">
-          <ul className="list-inside list-disc space-y-1">
-            {data.diketahui.map((d, i) => (
-              <li key={i}>
-                <Teks>{d}</Teks>
-              </li>
-            ))}
-          </ul>
-        </Bagian>
+        {data.diketahui?.length > 0 && (
+          <Bagian judul="Diketahui">
+            <ul className="list-inside list-disc space-y-1">
+              {data.diketahui.map((d, i) => (
+                <li key={i}>
+                  <Teks>{d}</Teks>
+                </li>
+              ))}
+            </ul>
+          </Bagian>
+        )}
 
-        <Bagian judul="Ditanya">
-          <Teks>{data.ditanya}</Teks>
-        </Bagian>
+        {data.ditanya && (
+          <Bagian judul="Ditanya">
+            <Teks>{data.ditanya}</Teks>
+          </Bagian>
+        )}
 
-        <Bagian judul="Rumus">
-          <div className="overflow-x-auto rounded-lg border-2 border-ink/20 bg-paper px-3 py-2">
-            <Teks>{data.rumus}</Teks>
-          </div>
-        </Bagian>
+        {data.rumus && (
+          <Bagian judul="Rumus">
+            <div className="overflow-x-auto rounded-lg border-2 border-ink/20 bg-paper px-3 py-2">
+              <Teks>{data.rumus}</Teks>
+            </div>
+          </Bagian>
+        )}
 
         <Bagian judul="Langkah penyelesaian">
           <ol className="space-y-2">

@@ -1,4 +1,6 @@
 // src/components/LatarBelakang.js
+// Latar situs umum: blob pastel yang melayang pelan + simbol matematika samar.
+
 const simbol = [
   { s: "Σ", x: "6%", y: "14%", ukuran: "text-6xl", jeda: "0s", r: "-12deg" },
   { s: "π", x: "88%", y: "10%", ukuran: "text-7xl", jeda: "1.2s", r: "10deg" },
@@ -16,14 +18,17 @@ export default function LatarBelakang() {
       aria-hidden="true"
       className="pointer-events-none fixed inset-0 -z-10 overflow-hidden"
     >
-      <div className="absolute -left-24 top-10 h-96 w-96 rounded-full bg-brand/20 blur-3xl animate-[drift_18s_ease-in-out_infinite]" />
-      <div className="absolute -right-24 top-1/3 h-[28rem] w-[28rem] rounded-full bg-sun/25 blur-3xl animate-[drift_22s_ease-in-out_infinite]" />
-      <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-mint/20 blur-3xl animate-[drift_26s_ease-in-out_infinite]" />
+      {/* Blob pastel */}
+      <div className="absolute -left-24 top-10 h-96 w-96 rounded-full bg-brand/15 blur-3xl animate-[drift_18s_ease-in-out_infinite]" />
+      <div className="absolute -right-24 top-1/4 h-[28rem] w-[28rem] rounded-full bg-peach/50 blur-3xl animate-[drift_22s_ease-in-out_infinite]" />
+      <div className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-mint/35 blur-3xl animate-[drift_26s_ease-in-out_infinite]" />
+      <div className="absolute -bottom-20 -right-16 h-80 w-80 rounded-full bg-rose/40 blur-3xl animate-[drift_20s_ease-in-out_infinite]" />
 
+      {/* Simbol matematika samar */}
       {simbol.map((x) => (
         <span
           key={x.s}
-          className={`absolute select-none font-display font-bold text-ink/10 animate-[melayang_9s_ease-in-out_infinite] ${x.ukuran}`}
+          className={`absolute select-none font-display font-bold text-brand/10 animate-[melayang_9s_ease-in-out_infinite] ${x.ukuran}`}
           style={{
             left: x.x,
             top: x.y,

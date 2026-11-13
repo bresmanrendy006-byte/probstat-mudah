@@ -196,4 +196,52 @@ export const materiProbabilitas = [
       },
     ],
   },
+
+  {
+    slug: "teorema-bayes",
+    judul: "Teorema Bayes",
+    kategori: "Probabilitas",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`Teorema Bayes dipakai untuk membalik peluang bersyarat: dari $P(B|A)$ yang diketahui menjadi $P(A|B)$ yang ingin dicari. Biasanya kita tahu peluang akibat jika sebabnya diketahui, lalu ingin mencari peluang sebabnya jika akibatnya sudah terlihat.`,
+      t`Teorema ini bergantung pada peluang total. Jika $A_1, A_2, \dots, A_n$ saling lepas dan gabungannya adalah seluruh ruang sampel, maka $P(B)$ dihitung dengan menjumlahkan kontribusi tiap $A_i$.`,
+    ],
+    rumus: [
+      { nama: "Peluang total", tex: t`P(B) = \sum_{j} P(A_j)\,P(B|A_j)` },
+      { nama: "Teorema Bayes", tex: t`P(A_i|B) = \dfrac{P(A_i)\,P(B|A_i)}{\sum_{j} P(A_j)\,P(B|A_j)}`, ket: t`Penyebutnya adalah $P(B)$ dari peluang total.` },
+    ],
+    contoh: [
+      {
+        soal: "Mesin A memproduksi 60% barang dan mesin B 40%. Barang cacat dari mesin A sebesar 2%, dari mesin B sebesar 5%. Jika satu barang dipilih acak dan ternyata cacat, berapa peluang barang itu berasal dari mesin A?",
+        diketahui: [
+          t`$P(A) = 0{,}6$ dan $P(B) = 0{,}4$`,
+          t`$P(C|A) = 0{,}02$ dan $P(C|B) = 0{,}05$, dengan $C$ = barang cacat`,
+        ],
+        ditanya: t`$P(A|C)$`,
+        rumus: t`$P(A|C) = \dfrac{P(A)\,P(C|A)}{P(A)\,P(C|A) + P(B)\,P(C|B)}$`,
+        langkah: [
+          t`Hitung peluang total cacat: $P(C) = 0{,}6 \times 0{,}02 + 0{,}4 \times 0{,}05 = 0{,}012 + 0{,}020 = 0{,}032$`,
+          t`Hitung pembilang: $P(A)\,P(C|A) = 0{,}6 \times 0{,}02 = 0{,}012$`,
+          t`Bagi: $P(A|C) = \dfrac{0{,}012}{0{,}032} = 0{,}375$`,
+        ],
+        jawaban: t`Peluangnya adalah $0{,}375$ atau $\dfrac{3}{8}$.`,
+      },
+      {
+        soal: "Suatu penyakit diderita 1% penduduk. Tes memberi hasil positif pada 95% penderita, dan positif palsu pada 5% orang sehat. Jika seseorang tes positif, berapa peluang ia benar-benar sakit?",
+        diketahui: [
+          t`$P(S) = 0{,}01$ dan $P(S') = 0{,}99$`,
+          t`$P(+|S) = 0{,}95$ dan $P(+|S') = 0{,}05$`,
+        ],
+        ditanya: t`$P(S|+)$`,
+        rumus: t`$P(S|+) = \dfrac{P(S)\,P(+|S)}{P(S)\,P(+|S) + P(S')\,P(+|S')}$`,
+        langkah: [
+          t`Pembilang: $0{,}01 \times 0{,}95 = 0{,}0095$`,
+          t`Peluang total positif: $0{,}0095 + 0{,}99 \times 0{,}05 = 0{,}0095 + 0{,}0495 = 0{,}059$`,
+          t`Bagi: $P(S|+) = \dfrac{0{,}0095}{0{,}059} \approx 0{,}161$`,
+        ],
+        jawaban: t`Peluangnya hanya sekitar $16{,}1\%$, karena penyakitnya langka sehingga sebagian besar hasil positif berasal dari orang sehat.`,
+      },
+    ],
+  },
 ];
