@@ -202,7 +202,7 @@ export const materiProbabilitas = [
     judul: "Teorema Bayes",
     kategori: "Probabilitas",
     tingkat: "Mahasiswa",
-    video: [],
+    video: ["gnjYXzCeOQE"],
     pengertian: [
       t`Teorema Bayes dipakai untuk membalik peluang bersyarat: dari $P(B|A)$ yang diketahui menjadi $P(A|B)$ yang ingin dicari. Biasanya kita tahu peluang akibat jika sebabnya diketahui, lalu ingin mencari peluang sebabnya jika akibatnya sudah terlihat.`,
       t`Teorema ini bergantung pada peluang total. Jika $A_1, A_2, \dots, A_n$ saling lepas dan gabungannya adalah seluruh ruang sampel, maka $P(B)$ dihitung dengan menjumlahkan kontribusi tiap $A_i$.`,
