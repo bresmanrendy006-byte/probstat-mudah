@@ -83,7 +83,12 @@ function FormLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [lihat, setLihat] = useState(false);
-  const [galat, setGalat] = useState("");
+  // Bila datang dari link konfirmasi yang gagal (/login?galat=konfirmasi), tampilkan pesannya.
+  const [galat, setGalat] = useState(
+    params.get("galat") === "konfirmasi"
+      ? "Link konfirmasi tidak valid atau sudah kedaluwarsa. Coba daftar ulang atau masuk."
+      : ""
+  );
   const [info, setInfo] = useState("");
   const [proses, setProses] = useState(false);
 
@@ -126,7 +131,11 @@ function FormLogin() {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
         password,
-        options: { data: { nama: nama.trim() } },
+        options: {
+          data: { nama: nama.trim() },
+          // Tujuan setelah pengguna mengklik link di email.
+          emailRedirectTo: `${window.location.origin}/auth/confirm`,
+        },
       });
       if (error) {
         setGalat(pesanGalat[error.code] ?? "Pendaftaran gagal. Coba lagi.");
@@ -135,7 +144,9 @@ function FormLogin() {
         router.push("/dashboard");
         router.refresh();
       } else {
-        setInfo("Pendaftaran berhasil. Cek emailmu untuk konfirmasi, lalu masuk.");
+        setInfo(
+          "Pendaftaran berhasil. Cek emailmu (termasuk folder spam) dan klik link konfirmasi, lalu masuk."
+        );
       }
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({
