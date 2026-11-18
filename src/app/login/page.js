@@ -5,6 +5,7 @@
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 
 const pesanGalat = {
@@ -273,6 +274,28 @@ function FormLogin() {
           {info && (
             <p role="status" className="rounded-2xl bg-mint/30 px-4 py-3 text-sm font-semibold">
               {info}
+            </p>
+          )}
+
+          {daftar && (
+            <p className="text-xs leading-relaxed text-ink/60">
+              Dengan mendaftar, kamu menyetujui{" "}
+              <Link
+                href="/syarat"
+                target="_blank"
+                className="font-semibold text-brand underline underline-offset-2"
+              >
+                Syarat Layanan
+              </Link>{" "}
+              dan{" "}
+              <Link
+                href="/privasi"
+                target="_blank"
+                className="font-semibold text-brand underline underline-offset-2"
+              >
+                Kebijakan Privasi
+              </Link>
+              .
             </p>
           )}
 

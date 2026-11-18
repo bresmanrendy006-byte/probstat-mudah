@@ -17,6 +17,11 @@ const tautanFooter = [
   { href: "/kalkulator", nama: "Kalkulator" },
 ];
 
+const tautanLegal = [
+  { href: "/privasi", nama: "Kebijakan Privasi" },
+  { href: "/syarat", nama: "Syarat Layanan" },
+];
+
 export default function KerangkaUmum({ children }) {
   const pathname = usePathname();
 
@@ -67,6 +72,21 @@ export default function KerangkaUmum({ children }) {
               </Link>
             ))}
           </nav>
+        </div>
+
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-5 gap-y-1 border-t border-brand/10 px-4 py-3 text-xs text-ink/60">
+          <nav aria-label="Tautan legal" className="flex flex-wrap gap-x-5 gap-y-1">
+            {tautanLegal.map((t) => (
+              <Link
+                key={t.href}
+                href={t.href}
+                className="font-semibold underline-offset-2 transition hover:text-brand hover:underline"
+              >
+                {t.nama}
+              </Link>
+            ))}
+          </nav>
+          <span>© 2026 ProbStat Mudah</span>
         </div>
       </footer>
     </div>
