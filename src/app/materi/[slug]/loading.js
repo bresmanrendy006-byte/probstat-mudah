@@ -16,7 +16,7 @@ export default function LoadingIsiMateri() {
       <Skeleton className="mt-3 h-10 w-3/4" />
 
       {/* Kartu aksi (Tandai selesai + Simpan), tingginya sama dengan AksiMateri */}
-      <Skeleton className="mt-5 h-[116px] w-full rounded-2xl sm:h-[104px]" />
+      <Skeleton className="mt-5 h-[188px] w-full rounded-3xl sm:h-[112px]" />
 
       {/* Menu loncat */}
       <div className="mt-5 flex flex-wrap gap-2">
@@ -75,7 +75,7 @@ export default function LoadingIsiMateri() {
       </div>
 
       {/* Kotak gelap kalkulator */}
-      <div className="mt-8 rounded-2xl border-2 border-ink bg-ink p-6">
+      <div className="mt-8 rounded-3xl bg-linear-to-br from-brand to-[#8b7ee8] p-6">
         <Skeleton gelap className="h-5 w-48" />
         <Skeleton gelap className="mt-3 h-11 w-40" />
       </div>

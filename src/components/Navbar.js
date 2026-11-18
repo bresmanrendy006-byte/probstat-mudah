@@ -45,6 +45,14 @@ export default function Navbar() {
   const [buka, setBuka] = useState(false);
   const [kecil, setKecil] = useState(false); // true setelah halaman digulir
 
+  // Tutup menu setiap kali halaman berpindah, apa pun tombol yang diklik
+  // (termasuk Login / Panel Admin dari TombolAkun, atau tombol Kembali di HP).
+  const [pathLama, setPathLama] = useState(pathname);
+  if (pathname !== pathLama) {
+    setPathLama(pathname);
+    setBuka(false);
+  }
+
   useEffect(() => {
     function cek() {
       setKecil(window.scrollY > 12);

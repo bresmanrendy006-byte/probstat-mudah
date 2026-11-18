@@ -4,7 +4,7 @@
 // Di atas latar gelap, tambahkan prop gelap: <Skeleton gelap className="h-6 w-40" />
 
 // Gaya kartu yang sama dengan kartu di halaman asli (dipakai file loading.js).
-export const KARTU = "rounded-2xl border-2 border-ink bg-white shadow-hard";
+export const KARTU = "rounded-3xl border border-brand/10 bg-white shadow-hard";
 
 export default function Skeleton({ className = "", gelap = false }) {
   // Bila className sudah menentukan sudut (mis. rounded-full), jangan tambah rounded-xl

@@ -1,5 +1,8 @@
 "use client";
 
+// src/app/login/page.js
+// Halaman Masuk / Daftar. Tersambung Supabase; pengalihan setelah masuk berdasarkan role.
+
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
@@ -15,27 +18,60 @@ const pesanGalat = {
 };
 
 const isian =
-  "mt-1 w-full rounded-xl border-2 border-ink bg-paper px-3 py-2.5 outline-none transition focus:bg-white focus:ring-2 focus:ring-sun";
+  "mt-1.5 w-full rounded-2xl border border-brand/20 bg-paper px-4 py-3 outline-none transition placeholder:text-ink/40 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15";
 
 // Daftar aturan di bawah kolom isian. Netral sebelum diisi, hijau jika terpenuhi, merah jika belum.
 function Aturan({ id, terisi, daftar }) {
   return (
-    <ul id={id} className="mt-2 space-y-1 text-xs">
+    <ul id={id} className="mt-2.5 space-y-1.5 text-xs">
       {daftar.map(([ok, teks]) => {
         const gaya = ok
           ? "font-semibold text-emerald-700"
           : terisi
-          ? "text-red-700"
-          : "text-ink/60";
+            ? "text-red-700"
+            : "text-ink/60";
+        const bulat = ok
+          ? "bg-mint text-ink"
+          : terisi
+            ? "bg-rose text-red-800"
+            : "bg-lavender text-ink/50";
         const tanda = ok ? "✓" : terisi ? "✕" : "○";
         return (
-          <li key={teks} className={`flex items-start gap-1.5 ${gaya}`}>
-            <span aria-hidden="true" className="w-3 shrink-0">{tanda}</span>
+          <li key={teks} className={`flex items-center gap-2 ${gaya}`}>
+            <span
+              aria-hidden="true"
+              className={`grid size-4 shrink-0 place-items-center rounded-full text-[10px] font-bold ${bulat}`}
+            >
+              {tanda}
+            </span>
             <span>{teks}</span>
           </li>
         );
       })}
     </ul>
+  );
+}
+
+// Bilah kekuatan kata sandi: 3 segmen, diisi sesuai jumlah aturan yang terpenuhi.
+function BilahKekuatan({ jumlah }) {
+  const warna = ["bg-rose", "bg-sun", "bg-mint"];
+  const nama = ["Lemah", "Cukup", "Kuat"];
+  return (
+    <div className="mt-3" aria-hidden="true">
+      <div className="flex gap-1.5">
+        {[0, 1, 2].map((i) => (
+          <span
+            key={i}
+            className={`h-1.5 flex-1 rounded-full transition-colors ${
+              i < jumlah ? warna[Math.max(jumlah - 1, 0)] : "bg-lavender"
+            }`}
+          />
+        ))}
+      </div>
+      <p className="mt-1 text-xs font-semibold text-ink/60">
+        Kekuatan: {jumlah > 0 ? nama[jumlah - 1] : "-"}
+      </p>
+    </div>
   );
 }
 
@@ -61,6 +97,7 @@ function FormLogin() {
     [/\d/.test(password), "Mengandung angka"],
   ];
   const semuaOk = [...aturanNama, ...aturanEmail, ...aturanPassword].every(([ok]) => ok);
+  const kekuatan = aturanPassword.filter(([ok]) => ok).length;
 
   function ganti(modeDaftar) {
     setDaftar(modeDaftar);
@@ -123,8 +160,11 @@ function FormLogin() {
 
   return (
     <div className="mx-auto mt-4 max-w-md animate-rise">
-      <div className="rounded-2xl border-2 border-ink bg-white p-7 shadow-hard">
-        <span className="grid size-11 place-items-center rounded-lg border-2 border-ink bg-brand text-xl text-white shadow-hard">
+      <div className="rounded-3xl border border-brand/10 bg-white p-6 shadow-hard sm:p-8">
+        <span
+          aria-hidden="true"
+          className="grid size-12 place-items-center rounded-full bg-linear-to-br from-brand to-[#9b8cf0] text-xl font-bold text-white shadow-md"
+        >
           σ
         </span>
         <h1 className="mt-4 text-3xl font-bold">{daftar ? "Daftar" : "Masuk"}</h1>
@@ -134,7 +174,8 @@ function FormLogin() {
             : "Masuk untuk melihat progres belajarmu."}
         </p>
 
-        <div className="mt-5 flex gap-2">
+        {/* Pilihan Masuk / Daftar */}
+        <div className="mt-5 flex gap-1 rounded-full bg-lavender p-1">
           {[
             ["Masuk", false],
             ["Daftar", true],
@@ -143,8 +184,9 @@ function FormLogin() {
               key={label}
               type="button"
               onClick={() => ganti(mode)}
-              className={`flex-1 rounded-full border-2 border-ink py-1.5 text-sm font-semibold transition ${
-                daftar === mode ? "bg-sun shadow-hard" : "bg-white hover:bg-ink/5"
+              aria-pressed={daftar === mode}
+              className={`flex-1 rounded-full py-2 text-sm font-semibold transition ${
+                daftar === mode ? "bg-white shadow-sm" : "text-ink/60 hover:text-ink"
               }`}
             >
               {label}
@@ -201,21 +243,24 @@ function FormLogin() {
                 type="button"
                 onClick={() => setLihat(!lihat)}
                 aria-pressed={lihat}
-                className="mt-1 shrink-0 rounded-xl border-2 border-ink bg-white px-3 text-sm font-semibold transition hover:bg-sun"
+                className="mt-1.5 shrink-0 rounded-2xl border border-brand/20 bg-white px-4 text-sm font-semibold transition hover:bg-sun/50"
               >
                 {lihat ? "Sembunyi" : "Lihat"}
               </button>
             </div>
-            {daftar && <Aturan id="aturan-password" terisi={password.length > 0} daftar={aturanPassword} />}
+            {daftar && password.length > 0 && <BilahKekuatan jumlah={kekuatan} />}
+            {daftar && (
+              <Aturan id="aturan-password" terisi={password.length > 0} daftar={aturanPassword} />
+            )}
           </div>
 
           {galat && (
-            <p role="alert" className="rounded-lg border-2 border-ink bg-sun/30 px-3 py-2 text-sm font-semibold">
+            <p role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
               {galat}
             </p>
           )}
           {info && (
-            <p role="status" className="rounded-lg border-2 border-ink bg-mint/20 px-3 py-2 text-sm font-semibold">
+            <p role="status" className="rounded-2xl bg-mint/30 px-4 py-3 text-sm font-semibold">
               {info}
             </p>
           )}
@@ -223,7 +268,7 @@ function FormLogin() {
           <button
             type="submit"
             disabled={proses || (daftar && !semuaOk)}
-            className="w-full rounded-xl border-2 border-ink bg-brand py-3 font-semibold text-white shadow-hard transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-x-0 disabled:hover:translate-y-0 disabled:hover:shadow-hard"
+            className="w-full rounded-full bg-linear-to-r from-brand to-[#8b7ee8] py-3 font-semibold text-white shadow-[0_12px_24px_-10px_rgba(91,94,214,0.7)] transition hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0"
           >
             {proses ? "Memproses..." : daftar ? "Daftar" : "Masuk"}
           </button>

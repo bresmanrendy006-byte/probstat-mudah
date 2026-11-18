@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ambilDaftar } from "@/data/daftarBab";
+import UbahRole from "@/components/UbahRole";
 
 export const metadata = { title: "Ringkasan | Panel Admin" };
 
@@ -28,9 +29,12 @@ export default async function Admin() {
     .maybeSingle();
   if (saya?.role !== "admin") redirect("/dashboard");
 
-  // Policy "admin lihat semua ..." mengizinkan admin membaca data semua pengguna (hanya membaca).
+  // Policy "admin lihat semua ..." mengizinkan admin membaca data semua pengguna.
   const [profil, progres, skor] = await Promise.all([
-    supabase.from("profiles").select("id, nama, role, dibuat").order("dibuat", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("id, nama, email, role, dibuat")
+      .order("dibuat", { ascending: false }),
     supabase.from("progres").select("user_id, slug"),
     supabase
       .from("skor_kuis")
@@ -50,6 +54,7 @@ export default async function Admin() {
   });
 
   const jumlahAdmin = pengguna.filter((p) => p.role === "admin").length;
+  const satuSatunyaAdmin = jumlahAdmin === 1;
   const statistik = [
     { angka: pengguna.length, label: "Total pengguna", garis: "bg-brand" },
     { angka: pengguna.length - jumlahAdmin, label: "Pelajar", garis: "bg-mint" },
@@ -63,14 +68,15 @@ export default async function Admin() {
         <p className="text-xs font-bold uppercase tracking-widest text-brand">Panel Admin</p>
         <h1 className="mt-1 text-3xl font-bold sm:text-4xl">Ringkasan pengguna</h1>
         <p className="mt-1 text-sm text-slate-600">
-          Semua akun dan kemajuan belajarnya. Tampilan ini hanya untuk membaca.
+          Semua akun dan kemajuan belajarnya. Data belajar hanya bisa dibaca; yang bisa diubah
+          hanya role pengguna.
         </p>
       </header>
 
       {galat && (
         <p className="rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm font-semibold text-amber-900">
-          Sebagian data belum bisa dibaca. Pastikan SQL admin (policy &quot;admin lihat semua ...&quot;)
-          sudah dijalankan di Supabase.
+          Sebagian data belum bisa dibaca. Pastikan SQL admin (policy &quot;admin lihat semua
+          ...&quot;) dan SQL tahap 2 (kolom email) sudah dijalankan di Supabase.
         </p>
       )}
 
@@ -93,29 +99,37 @@ export default async function Admin() {
         </div>
 
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full min-w-[680px] text-left text-sm">
+          <table className="w-full min-w-[980px] text-left text-sm">
             <thead>
               <tr className="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
                 <th className="py-2 pr-3">Nama</th>
+                <th className="py-2 pr-3">Email</th>
                 <th className="py-2 pr-3">Role</th>
                 <th className="py-2 pr-3">Progres materi</th>
                 <th className="py-2 pr-3">Percobaan</th>
                 <th className="py-2 pr-3">Skor terakhir</th>
-                <th className="py-2">Bergabung</th>
+                <th className="py-2 pr-3">Bergabung</th>
+                <th className="py-2">Aksi</th>
               </tr>
             </thead>
             <tbody>
               {pengguna.map((p) => {
                 const persen = totalMateri ? Math.round((p.selesai / totalMateri) * 100) : 0;
+                const diriSendiri = p.id === claims.sub;
                 return (
                   <tr key={p.id} className="border-b border-slate-100 align-middle hover:bg-slate-50">
                     <td className="py-3 pr-3 font-semibold">
                       {p.nama || "(tanpa nama)"}
-                      {p.id === claims.sub && (
-                        <span className="ml-2 rounded-full bg-mint/20 px-2 py-0.5 text-xs font-bold text-mint">
+                      {diriSendiri && (
+                        <span className="ml-2 rounded-full bg-mint/20 px-2 py-0.5 text-xs font-bold text-emerald-700">
                           Kamu
                         </span>
                       )}
+                    </td>
+                    <td className="max-w-[220px] py-3 pr-3">
+                      <span className="block truncate text-slate-600" title={p.email ?? ""}>
+                        {p.email || "-"}
+                      </span>
                     </td>
                     <td className="py-3 pr-3">
                       <span
@@ -151,7 +165,18 @@ export default async function Admin() {
                         <span className="text-slate-400">-</span>
                       )}
                     </td>
-                    <td className="py-3 text-slate-600">{p.dibuat ? formatTanggal(p.dibuat) : "-"}</td>
+                    <td className="py-3 pr-3 text-slate-600">
+                      {p.dibuat ? formatTanggal(p.dibuat) : "-"}
+                    </td>
+                    <td className="py-3">
+                      <UbahRole
+                        id={p.id}
+                        nama={p.nama}
+                        role={p.role}
+                        diriSendiri={diriSendiri}
+                        satuSatunyaAdmin={satuSatunyaAdmin}
+                      />
+                    </td>
                   </tr>
                 );
               })}

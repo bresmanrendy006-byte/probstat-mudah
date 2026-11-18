@@ -13,6 +13,12 @@ import { createClient } from "@/lib/supabase/client";
 const NILAI_LULUS = 70;
 const HURUF = ["A", "B", "C", "D"];
 
+const KARTU = "rounded-3xl border border-brand/10 bg-white shadow-hard";
+const TOMBOL_UTAMA =
+  "rounded-full bg-linear-to-r from-brand to-[#8b7ee8] px-6 py-2.5 font-semibold text-white shadow-[0_12px_24px_-10px_rgba(91,94,214,0.7)] transition hover:-translate-y-0.5 active:translate-y-0";
+const TOMBOL_ULANG =
+  "rounded-full border border-brand/20 bg-sun px-6 py-2.5 font-semibold shadow-sm transition hover:-translate-y-0.5 active:translate-y-0";
+
 function formatTanggal(iso) {
   return new Date(iso).toLocaleDateString("id-ID", {
     day: "numeric",
@@ -46,14 +52,18 @@ export default function Kuis({ slug, soal }) {
       try {
         const supabase = createClient();
         const { data } = await supabase.auth.getClaims();
-        if (!data?.claims) {
+        const userId = data?.claims?.sub;
+        if (!userId) {
           if (!dibatalkan) setMode("mengerjakan");
           return;
         }
 
+        // Filter user_id WAJIB: admin boleh membaca skor semua pengguna,
+        // jadi tanpa filter ini ringkasan admin akan tercampur data orang lain.
         const { data: baris, error } = await supabase
           .from("skor_kuis")
           .select("nilai, dibuat")
+          .eq("user_id", userId)
           .eq("slug", slug)
           .order("dibuat", { ascending: false })
           .limit(50);
@@ -149,7 +159,7 @@ export default function Kuis({ slug, soal }) {
   // ===== Tampilan memuat =====
   if (mode === "memuat") {
     return (
-      <div className="rounded-2xl border-2 border-ink bg-white p-6 text-center text-sm text-ink/70 shadow-hard">
+      <div className={`${KARTU} p-6 text-center text-sm text-ink/70`} role="status">
         Memuat kuis...
       </div>
     );
@@ -159,20 +169,22 @@ export default function Kuis({ slug, soal }) {
   if (mode === "ringkasan" && riwayat) {
     const lulus = riwayat.terbaik >= NILAI_LULUS;
     return (
-      <div className="rounded-2xl border-2 border-ink bg-white p-6 text-center shadow-hard">
+      <div className={`${KARTU} p-6 text-center`}>
         <p className="text-sm font-bold uppercase tracking-wide text-brand">
           Kamu sudah mengerjakan kuis ini
         </p>
-        <p className="mt-2 font-display text-6xl font-bold">{riwayat.terakhir}</p>
-        <p className="mt-1 text-sm text-ink/70">
+        <p className="mx-auto mt-3 grid size-28 place-items-center rounded-full bg-linear-to-br from-lavender to-peach/50 font-display text-5xl font-bold">
+          {riwayat.terakhir}
+        </p>
+        <p className="mt-2 text-sm text-ink/70">
           Nilai terakhir · {formatTanggal(riwayat.tanggal)}
         </p>
 
         <div className="mt-4 flex flex-wrap justify-center gap-2 text-sm">
-          <span className="rounded-full border-2 border-ink bg-sun px-3 py-1 font-semibold">
+          <span className="rounded-full bg-sun px-3 py-1 font-semibold">
             Terbaik: {riwayat.terbaik}
           </span>
-          <span className="rounded-full border-2 border-ink bg-white px-3 py-1 font-semibold">
+          <span className="rounded-full bg-lavender px-3 py-1 font-semibold">
             {riwayat.jumlah}x percobaan
           </span>
         </div>
@@ -183,11 +195,7 @@ export default function Kuis({ slug, soal }) {
             : `Belum pernah mencapai batas lulus (${NILAI_LULUS}). Yuk coba lagi!`}
         </p>
 
-        <button
-          type="button"
-          onClick={mulai}
-          className="mt-5 rounded-xl border-2 border-ink bg-sun px-5 py-2.5 font-semibold shadow-hard transition hover:-translate-y-0.5 active:translate-y-0"
-        >
+        <button type="button" onClick={mulai} className={`mt-5 ${TOMBOL_ULANG}`}>
           Ulangi kuis
         </button>
       </div>
@@ -198,10 +206,16 @@ export default function Kuis({ slug, soal }) {
   if (mode === "hasil") {
     const lulus = nilai >= NILAI_LULUS;
     return (
-      <div className="rounded-2xl border-2 border-ink bg-white p-6 text-center shadow-hard">
+      <div className={`${KARTU} p-6 text-center`}>
         <p className="text-sm font-bold uppercase tracking-wide text-brand">Hasil kuis</p>
-        <p className="mt-2 font-display text-6xl font-bold">{nilai}</p>
-        <p className="mt-1 text-sm text-ink/70">
+        <p
+          className={`mx-auto mt-3 grid size-28 place-items-center rounded-full font-display text-5xl font-bold ${
+            lulus ? "bg-mint/40" : "bg-peach/50"
+          }`}
+        >
+          {nilai}
+        </p>
+        <p className="mt-2 text-sm text-ink/70">
           {jumlahBenar} dari {total} soal benar
         </p>
         <p className="mt-3 font-semibold">
@@ -210,7 +224,10 @@ export default function Kuis({ slug, soal }) {
             : `Belum lulus (batas ${NILAI_LULUS}). Baca materinya lagi, lalu coba ulang ya!`}
         </p>
 
-        <div className="mt-4 rounded-xl border-2 border-ink/20 bg-paper p-3 text-sm">
+        <div
+          aria-live="polite"
+          className="mt-4 rounded-2xl bg-lavender/60 p-3 text-sm"
+        >
           {statusSimpan === "menyimpan" && <p>Menyimpan skor...</p>}
           {statusSimpan === "tersimpan" && (
             <p>
@@ -235,11 +252,7 @@ export default function Kuis({ slug, soal }) {
           )}
         </div>
 
-        <button
-          type="button"
-          onClick={mulai}
-          className="mt-5 rounded-xl border-2 border-ink bg-sun px-5 py-2.5 font-semibold shadow-hard transition hover:-translate-y-0.5 active:translate-y-0"
-        >
+        <button type="button" onClick={mulai} className={`mt-5 ${TOMBOL_ULANG}`}>
           Ulangi kuis
         </button>
       </div>
@@ -247,31 +260,48 @@ export default function Kuis({ slug, soal }) {
   }
 
   // ===== Tampilan soal =====
+  // Bilah progres ikut maju begitu soal dijawab.
+  const kemajuan = ((nomor + (sudahMemilih ? 1 : 0)) / total) * 100;
+
   return (
-    <div className="rounded-2xl border-2 border-ink bg-white p-5 shadow-hard">
+    <div className={`${KARTU} p-5 sm:p-6`}>
       <div className="flex items-center justify-between gap-3">
-        <span className="rounded-full border-2 border-ink bg-sun px-3 py-0.5 text-xs font-bold">
+        <span className="rounded-full bg-sun px-3 py-1 text-xs font-bold">
           Soal {nomor + 1} dari {total}
         </span>
-        <div className="h-2 w-32 overflow-hidden rounded-full border-2 border-ink bg-paper">
+        <div
+          role="progressbar"
+          aria-label="Kemajuan kuis"
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={Math.round(kemajuan)}
+          className="h-2.5 w-32 overflow-hidden rounded-full bg-lavender"
+        >
           <div
-            className="h-full bg-mint transition-all"
-            style={{ width: `${(nomor / total) * 100}%` }}
+            className="h-full rounded-full bg-linear-to-r from-mint to-[#4fb8a3] transition-all motion-reduce:transition-none"
+            style={{ width: `${kemajuan}%` }}
           />
         </div>
       </div>
 
-      <p className="mt-4 text-lg font-semibold">
+      <p className="mt-5 text-lg font-semibold">
         <Teks>{s.pertanyaan}</Teks>
       </p>
 
       <div className="mt-4 space-y-3">
         {s.pilihan.map((p, i) => {
-          let gaya = "border-ink bg-white hover:-translate-y-0.5 hover:bg-sun/30";
+          let gaya = "border-brand/15 bg-white hover:-translate-y-0.5 hover:border-brand/40 hover:bg-lavender/50";
+          let huruf = "bg-lavender";
           if (sudahMemilih) {
-            if (i === s.benar) gaya = "border-ink bg-mint/20";
-            else if (i === dipilih) gaya = "border-ink bg-red-100";
-            else gaya = "border-ink/30 bg-white opacity-60";
+            if (i === s.benar) {
+              gaya = "border-mint bg-mint/25";
+              huruf = "bg-mint";
+            } else if (i === dipilih) {
+              gaya = "border-rose bg-rose/40";
+              huruf = "bg-rose";
+            } else {
+              gaya = "border-brand/10 bg-white opacity-60";
+            }
           }
           return (
             <button
@@ -279,9 +309,11 @@ export default function Kuis({ slug, soal }) {
               type="button"
               onClick={() => pilih(i)}
               disabled={sudahMemilih}
-              className={`flex w-full items-center gap-3 rounded-xl border-2 px-4 py-3 text-left transition ${gaya}`}
+              className={`flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition motion-reduce:transition-none ${gaya}`}
             >
-              <span className="grid size-7 shrink-0 place-items-center rounded-full border-2 border-ink bg-white text-sm font-bold">
+              <span
+                className={`grid size-8 shrink-0 place-items-center rounded-full text-sm font-bold ${huruf}`}
+              >
                 {HURUF[i]}
               </span>
               <span className="min-w-0 overflow-x-auto overflow-y-hidden py-1">
@@ -293,9 +325,16 @@ export default function Kuis({ slug, soal }) {
       </div>
 
       {sudahMemilih && (
-        <div className="mt-4 rounded-xl border-2 border-ink bg-paper p-4 text-sm">
+        <div
+          aria-live="polite"
+          className={`mt-4 rounded-2xl p-4 text-sm ${
+            dipilih === s.benar ? "bg-mint/20" : "bg-rose/30"
+          }`}
+        >
           <p className="font-bold">
-            {dipilih === s.benar ? "Benar! 🎉" : `Belum tepat. Jawaban yang benar: ${HURUF[s.benar]}.`}
+            {dipilih === s.benar
+              ? "Benar! 🎉"
+              : `Belum tepat. Jawaban yang benar: ${HURUF[s.benar]}.`}
           </p>
           <p className="mt-1 leading-relaxed">
             <Teks>{s.pembahasan}</Teks>
@@ -304,11 +343,7 @@ export default function Kuis({ slug, soal }) {
       )}
 
       {sudahMemilih && (
-        <button
-          type="button"
-          onClick={lanjut}
-          className="mt-4 rounded-xl border-2 border-ink bg-brand px-5 py-2.5 font-semibold text-white shadow-hard transition hover:-translate-y-0.5 active:translate-y-0"
-        >
+        <button type="button" onClick={lanjut} className={`mt-4 ${TOMBOL_UTAMA}`}>
           {soalTerakhir ? "Lihat hasil" : "Soal berikutnya →"}
         </button>
       )}

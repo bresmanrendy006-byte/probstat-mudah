@@ -4,7 +4,7 @@
 import Skeleton from "@/components/Skeleton";
 
 // Sama dengan kelas "kartu" di dashboard/page.js
-const kartu = "rounded-xl border-2 border-ink bg-white shadow-hard";
+const kartu = "rounded-3xl border border-brand/10 bg-white shadow-hard";
 
 export default function LoadingDashboard() {
   return (

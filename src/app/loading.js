@@ -56,7 +56,7 @@ export default function LoadingBeranda() {
       </section>
 
       {/* Kotak gelap "Mulai dari mana?" */}
-      <section className="rounded-2xl border-2 border-ink bg-ink p-8">
+      <section className="rounded-3xl bg-linear-to-br from-brand to-[#8b7ee8] p-8">
         <Skeleton gelap className="h-7 w-48" />
         <div className="mt-5 grid gap-4 sm:grid-cols-2">
           {[1, 2].map((n) => (

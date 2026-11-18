@@ -1,5 +1,9 @@
 "use client";
 
+// src/app/kalkulator/page.js
+// Kalkulator 3 mode (Dasar, Peluang, Statistika): hasil ringkas + langkah penyelesaian.
+// Bagian Grafik masih placeholder (Tugas C).
+
 import { useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import Teks from "@/components/Teks";
@@ -31,7 +35,24 @@ const mode = [
   },
 ];
 
-const kartu = "bg-white border-2 border-ink rounded-xl shadow-hard";
+const kartu = "rounded-3xl border border-brand/10 bg-white shadow-hard";
+
+// Warna kotak hasil, dipakai bergantian.
+const aksen = ["bg-lavender", "bg-mint/30", "bg-peach/40", "bg-rose/40", "bg-sun/40"];
+
+function JudulKartu({ ikon, warna, children }) {
+  return (
+    <h2 className="flex items-center gap-2.5 text-lg font-bold">
+      <span
+        aria-hidden="true"
+        className={`grid size-8 shrink-0 place-items-center rounded-xl text-base ${warna}`}
+      >
+        {ikon}
+      </span>
+      {children}
+    </h2>
+  );
+}
 
 export default function Kalkulator() {
   const [aktif, setAktif] = useState(2);
@@ -76,7 +97,12 @@ export default function Kalkulator() {
       <h1 className="text-4xl font-bold">Kalkulator</h1>
       <p className="mt-1 text-ink/70">Masukkan data, lihat hasil dan langkahnya.</p>
 
-      <div className="mt-6 flex flex-wrap gap-2" role="tablist" aria-label="Jenis hitungan">
+      {/* Pilihan mode */}
+      <div
+        className="mt-6 inline-flex max-w-full flex-wrap gap-1 rounded-full border border-brand/10 bg-white p-1 shadow-sm"
+        role="tablist"
+        aria-label="Jenis hitungan"
+      >
         {mode.map((x, i) => (
           <button
             key={x.nama}
@@ -84,8 +110,8 @@ export default function Kalkulator() {
             role="tab"
             aria-selected={aktif === i}
             onClick={() => pilihMode(i)}
-            className={`px-5 py-2 rounded-full text-sm font-semibold border-2 border-ink transition ${
-              aktif === i ? "bg-sun shadow-hard" : "bg-white hover:-translate-y-0.5 hover:bg-ink/5"
+            className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
+              aktif === i ? "bg-brand text-white shadow-sm" : "hover:bg-lavender"
             }`}
           >
             {x.nama}
@@ -94,8 +120,11 @@ export default function Kalkulator() {
       </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <section className={`${kartu} p-5`}>
-          <label htmlFor="data" className="font-bold">Masukkan data</label>
+        {/* Input */}
+        <section className={`${kartu} p-5 sm:p-6`}>
+          <label htmlFor="data" className="block text-lg font-bold">
+            Masukkan data
+          </label>
           <p className="text-sm text-ink/60">{m.contoh}</p>
           <textarea
             id="data"
@@ -104,18 +133,18 @@ export default function Kalkulator() {
             onChange={(e) => setTeks(e.target.value)}
             onKeyDown={saatTekan}
             placeholder={m.hint}
-            className="mt-3 w-full rounded-xl border-2 border-ink bg-paper p-3 text-sm outline-none transition focus:bg-white focus:ring-2 focus:ring-sun"
+            className="mt-3 w-full rounded-2xl border border-brand/20 bg-paper p-4 text-sm outline-none transition placeholder:text-ink/40 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15"
           />
 
           <div className="mt-3">
             <p className="text-xs font-bold uppercase tracking-wide text-ink/60">Contoh cepat</p>
-            <div className="mt-1.5 flex flex-wrap gap-2">
+            <div className="mt-2 flex flex-wrap gap-2">
               {m.chip.map((c) => (
                 <button
                   key={c}
                   type="button"
                   onClick={() => pakaiContoh(c)}
-                  className="rounded-full border-2 border-ink bg-white px-3 py-1 text-xs font-semibold transition hover:-translate-y-0.5 hover:bg-sun"
+                  className="rounded-full bg-lavender px-3.5 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 hover:bg-sun"
                 >
                   {c}
                 </button>
@@ -123,18 +152,18 @@ export default function Kalkulator() {
             </div>
           </div>
 
-          <div className="mt-4 flex flex-wrap items-center gap-2">
+          <div className="mt-5 flex flex-wrap items-center gap-2">
             <button
               type="button"
               onClick={() => hitung(teks)}
-              className="px-5 py-2.5 rounded-xl bg-brand text-white font-semibold border-2 border-ink shadow-hard hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none transition"
+              className="rounded-full bg-linear-to-r from-brand to-[#8b7ee8] px-6 py-2.5 font-semibold text-white shadow-[0_12px_24px_-10px_rgba(91,94,214,0.7)] transition hover:-translate-y-0.5 active:translate-y-0"
             >
               Hitung
             </button>
             <button
               type="button"
               onClick={() => pakaiContoh(m.isiContoh)}
-              className="px-5 py-2.5 rounded-xl bg-white font-semibold border-2 border-ink hover:bg-sun transition"
+              className="rounded-full border border-brand/20 bg-white px-5 py-2.5 font-semibold transition hover:bg-sun/50"
             >
               Coba contoh
             </button>
@@ -142,16 +171,19 @@ export default function Kalkulator() {
               type="button"
               onClick={hapus}
               disabled={!teks && !hasil}
-              className="px-5 py-2.5 rounded-xl bg-white font-semibold border-2 border-ink transition hover:border-red-600 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-ink disabled:hover:bg-white disabled:hover:text-ink"
+              className="rounded-full border border-brand/20 bg-white px-5 py-2.5 font-semibold transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-brand/20 disabled:hover:bg-white disabled:hover:text-ink"
             >
               Hapus
             </button>
           </div>
-          <p className="mt-2 text-xs text-ink/50">Tip: tekan Ctrl + Enter untuk menghitung.</p>
+          <p className="mt-3 text-xs text-ink/50">Tip: tekan Ctrl + Enter untuk menghitung.</p>
         </section>
 
-        <section className={`${kartu} p-5`}>
-          <h2 className="font-bold">Hasil</h2>
+        {/* Hasil */}
+        <section className={`${kartu} p-5 sm:p-6`}>
+          <JudulKartu ikon="=" warna="bg-mint/40">
+            Hasil
+          </JudulKartu>
 
           {!hasil && (
             <p className="mt-3 text-sm text-ink/60">
@@ -163,22 +195,22 @@ export default function Kalkulator() {
             <p
               key={versi}
               role="alert"
-              className="mt-3 animate-rise rounded-lg border-2 border-red-600 bg-red-50 p-3 text-sm font-medium text-red-700"
+              className="mt-3 animate-rise rounded-2xl bg-rose/40 p-4 text-sm font-semibold"
             >
               {hasil.galat}
             </p>
           )}
 
           {hasil?.ringkasan && (
-            <dl key={versi} className="mt-3 grid animate-rise grid-cols-2 gap-3 text-sm">
-              {hasil.ringkasan.map((h) => (
+            <dl key={versi} className="mt-4 grid animate-rise grid-cols-2 gap-3 text-sm">
+              {hasil.ringkasan.map((h, i) => (
                 <div
                   key={h.label}
-                  className={`min-w-0 p-3 rounded-lg border-2 border-ink/20 bg-paper transition hover:border-ink ${
+                  className={`min-w-0 rounded-2xl p-3.5 ${aksen[i % aksen.length]} ${
                     hasil.ringkasan.length === 1 ? "col-span-2" : ""
                   }`}
                 >
-                  <dt className="text-ink/60">
+                  <dt className="text-ink/70">
                     <Teks>{h.label}</Teks>
                   </dt>
                   <dd className="mt-1 overflow-x-auto overflow-y-hidden font-display text-xl font-bold">
@@ -192,8 +224,11 @@ export default function Kalkulator() {
       </div>
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
-        <section className={`${kartu} p-5`}>
-          <h2 className="font-bold">Langkah penyelesaian</h2>
+        {/* Langkah */}
+        <section className={`${kartu} p-5 sm:p-6`}>
+          <JudulKartu ikon="✎" warna="bg-peach/60">
+            Langkah penyelesaian
+          </JudulKartu>
 
           {!hasil?.langkah && (
             <p className="mt-3 text-sm text-ink/60">
@@ -202,20 +237,25 @@ export default function Kalkulator() {
           )}
 
           {hasil?.langkah && (
-            <div key={versi} className="mt-3 animate-rise space-y-3 text-sm text-ink/70">
+            <div key={versi} className="mt-4 animate-rise space-y-3 text-sm text-ink/80">
               {hasil.langkah.map((l, i) => {
                 if (l.startsWith("#")) {
                   nomor = 0;
                   return (
-                    <p key={i} className="pt-2 font-bold text-ink">
+                    <p
+                      key={i}
+                      className="mt-2 inline-block rounded-full bg-sun/60 px-3 py-0.5 font-bold text-ink"
+                    >
                       {l.slice(1).trim()}
                     </p>
                   );
                 }
                 nomor += 1;
                 return (
-                  <div key={i} className="flex gap-2">
-                    <span className="font-bold text-ink">{nomor}.</span>
+                  <div key={i} className="flex gap-3">
+                    <span className="grid size-6 shrink-0 place-items-center rounded-full bg-lavender text-xs font-bold text-brand">
+                      {nomor}
+                    </span>
                     <div className="min-w-0 overflow-x-auto overflow-y-hidden py-0.5">
                       <Teks>{l}</Teks>
                     </div>
@@ -226,10 +266,24 @@ export default function Kalkulator() {
           )}
         </section>
 
-        <section className={`${kartu} p-5`}>
-          <h2 className="font-bold">Grafik</h2>
-          <div className="mt-3 grid h-40 place-items-center rounded-xl border-2 border-dashed border-ink/30 text-center text-sm text-ink/50">
-            Histogram dan boxplot segera hadir
+        {/* Grafik (placeholder) */}
+        <section className={`${kartu} p-5 sm:p-6`}>
+          <JudulKartu ikon="▮" warna="bg-lavender text-brand">
+            Grafik
+          </JudulKartu>
+          <div className="mt-4 grid h-44 place-items-center rounded-2xl border border-dashed border-brand/25 bg-paper text-center">
+            <div>
+              <div aria-hidden="true" className="mx-auto flex h-14 items-end justify-center gap-1.5">
+                {[28, 44, 56, 40, 24].map((t, i) => (
+                  <span
+                    key={i}
+                    className={`w-4 rounded-t-md ${aksen[i % aksen.length]}`}
+                    style={{ height: `${t}px` }}
+                  />
+                ))}
+              </div>
+              <p className="mt-3 text-sm text-ink/60">Histogram dan boxplot segera hadir</p>
+            </div>
           </div>
         </section>
       </div>

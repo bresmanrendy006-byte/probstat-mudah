@@ -6,6 +6,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Skeleton from "@/components/Skeleton";
 import { createClient } from "@/lib/supabase/client";
 
 // ===== Ikon kecil (SVG) =====
@@ -44,9 +45,11 @@ function IkonBookmark({ terisi = false, className = "size-5" }) {
   );
 }
 
-// Gaya dasar tombol (dipakai dua tombol di kartu "siap")
+const KARTU = "mt-5 rounded-3xl border border-brand/10 bg-white p-4 shadow-hard";
+
+// Gaya dasar tombol (dipakai dua tombol di kartu "siap"). Tinggi tetap 44px (h-11).
 const GAYA_TOMBOL =
-  "flex w-full items-center justify-center gap-2 rounded-xl border-2 border-ink px-4 py-2.5 text-sm font-semibold shadow-hard transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand disabled:cursor-wait disabled:opacity-60 sm:w-auto motion-reduce:transition-none";
+  "flex h-11 w-full items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold shadow-sm transition hover:-translate-y-0.5 hover:shadow-md disabled:cursor-wait disabled:opacity-60 disabled:hover:translate-y-0 sm:w-auto";
 
 export default function AksiMateri({ slug }) {
   // "memuat" | "belum-login" | "galat" | "siap"
@@ -173,23 +176,19 @@ export default function AksiMateri({ slug }) {
     }
   }
 
-  // ===== Memuat: kerangka seukuran kartu asli supaya tata letak tidak melompat =====
+  // ===== Memuat: kerangka seukuran kartu "siap" supaya tata letak tidak melompat =====
+  // Tinggi: HP = 188px, layar >= 640px = 112px (harus sama dengan materi/[slug]/loading.js).
   if (status === "memuat") {
-    return (
-      <div
-        aria-hidden="true"
-        className="mt-5 h-[116px] animate-pulse rounded-2xl border-2 border-ink/20 bg-white motion-reduce:animate-none sm:h-[104px]"
-      />
-    );
+    return <Skeleton className="mt-5 h-[188px] w-full rounded-3xl sm:h-[112px]" />;
   }
 
   // ===== Belum login: ajakan masuk / daftar =====
   if (status === "belum-login") {
     return (
-      <div className="mt-5 flex flex-col gap-4 rounded-2xl border-2 border-ink bg-white p-4 shadow-hard sm:flex-row sm:items-center">
+      <div className={`${KARTU} flex flex-col gap-4 sm:flex-row sm:items-center`}>
         <span
           aria-hidden="true"
-          className="grid size-11 shrink-0 place-items-center rounded-full border-2 border-ink bg-sun"
+          className="grid size-11 shrink-0 place-items-center rounded-full bg-sun"
         >
           <IkonBookmark terisi className="size-5" />
         </span>
@@ -204,13 +203,13 @@ export default function AksiMateri({ slug }) {
         <div className="flex flex-wrap gap-2">
           <Link
             href="/login"
-            className="rounded-xl border-2 border-ink bg-brand px-4 py-2 text-sm font-semibold text-white shadow-hard transition hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand motion-reduce:transition-none"
+            className="rounded-full bg-linear-to-r from-brand to-[#8b7ee8] px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
             Masuk
           </Link>
           <Link
             href="/login?mode=daftar"
-            className="rounded-full border-2 border-ink bg-white px-4 py-2 text-sm font-semibold transition hover:bg-sun focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-brand motion-reduce:transition-none"
+            className="rounded-full border border-brand/20 bg-white px-5 py-2 text-sm font-semibold transition hover:bg-sun/50"
           >
             Daftar gratis
           </Link>
@@ -224,11 +223,11 @@ export default function AksiMateri({ slug }) {
     return (
       <div
         role="alert"
-        className="mt-5 flex items-start gap-3 rounded-2xl border-2 border-ink bg-red-50 p-4 shadow-hard"
+        className="mt-5 flex items-start gap-3 rounded-3xl border border-red-200 bg-red-50 p-4 shadow-hard"
       >
         <span
           aria-hidden="true"
-          className="grid size-9 shrink-0 place-items-center rounded-full border-2 border-ink bg-red-600 font-bold text-white"
+          className="grid size-9 shrink-0 place-items-center rounded-full bg-red-500 font-bold text-white"
         >
           !
         </span>
@@ -248,14 +247,18 @@ export default function AksiMateri({ slug }) {
   else if (selesai) teksStatus = "Hebat, materi ini sudah selesai! Klik tombol hijau lagi untuk membatalkan.";
 
   return (
-    <div className="mt-5 rounded-2xl border-2 border-ink bg-white p-4 shadow-hard">
+    <div className={KARTU}>
       <div className="flex flex-col gap-3 sm:flex-row">
         <button
           type="button"
           onClick={ubahSelesai}
           disabled={sibuk}
           aria-pressed={selesai}
-          className={`${GAYA_TOMBOL} ${selesai ? "bg-mint text-ink" : "bg-brand text-white"}`}
+          className={`${GAYA_TOMBOL} ${
+            selesai
+              ? "bg-mint text-ink"
+              : "bg-linear-to-r from-brand to-[#8b7ee8] text-white"
+          }`}
         >
           <IkonCentang />
           {selesai ? "Sudah selesai" : "Tandai selesai"}
@@ -266,14 +269,17 @@ export default function AksiMateri({ slug }) {
           onClick={ubahBookmark}
           disabled={sibuk}
           aria-pressed={tersimpan}
-          className={`${GAYA_TOMBOL} ${tersimpan ? "bg-sun" : "bg-white hover:bg-sun"}`}
+          className={`${GAYA_TOMBOL} ${
+            tersimpan ? "bg-sun" : "border border-brand/20 bg-white hover:bg-sun/50"
+          }`}
         >
           <IkonBookmark terisi={tersimpan} />
           {tersimpan ? "Tersimpan" : "Simpan"}
         </button>
       </div>
 
-      <p aria-live="polite" className="mt-3 text-sm text-ink/70">
+      {/* min-h dipasang agar tinggi kartu tetap, dua baris di HP dan satu baris di layar lebar */}
+      <p aria-live="polite" className="mt-3 min-h-10 text-sm leading-5 text-ink/70 sm:min-h-5">
         {teksStatus}
       </p>
       {galat && (
@@ -283,4 +289,4 @@ export default function AksiMateri({ slug }) {
       )}
     </div>
   );
-}   
+}

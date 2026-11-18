@@ -3,7 +3,7 @@
 
 import Skeleton from "@/components/Skeleton";
 
-const kartu = "rounded-xl border-2 border-ink bg-white p-5 shadow-hard";
+const kartu = "rounded-3xl border border-brand/10 bg-white p-5 shadow-hard";
 
 export default function LoadingKalkulator() {
   return (
