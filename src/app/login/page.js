@@ -16,6 +16,7 @@ const pesanGalat = {
   email_not_confirmed: "Email belum dikonfirmasi. Cek kotak masuk emailmu.",
   over_email_send_rate_limit: "Terlalu banyak percobaan. Tunggu beberapa menit.",
   validation_failed: "Format email tidak valid.",
+  email_address_invalid: "Alamat email ini ditolak. Periksa apakah emailnya benar dan aktif.",
 };
 
 const isian =
@@ -87,7 +88,7 @@ function FormLogin() {
   // Bila datang dari link konfirmasi yang gagal (/login?galat=konfirmasi), tampilkan pesannya.
   const [galat, setGalat] = useState(
     params.get("galat") === "konfirmasi"
-      ? "Link konfirmasi tidak valid atau sudah kedaluwarsa. Coba daftar ulang atau masuk."
+      ? "Link konfirmasi tidak bisa dipakai di sini. Jika emailmu sudah dikonfirmasi, silakan masuk dengan email dan kata sandimu. Jika belum, coba daftar ulang."
       : ""
   );
   const [info, setInfo] = useState("");
@@ -139,7 +140,12 @@ function FormLogin() {
         },
       });
       if (error) {
-        setGalat(pesanGalat[error.code] ?? "Pendaftaran gagal. Coba lagi.");
+        // Catat kode galatnya saja (tanpa data pribadi) untuk bahan diagnosis.
+        console.warn("Galat daftar:", error.code, error.status);
+        setGalat(
+          pesanGalat[error.code] ??
+            "Pendaftaran gagal. Periksa apakah emailnya benar dan aktif, lalu coba lagi."
+        );
       } else if (data.session) {
         // Pendaftar baru selalu "pelajar".
         router.push("/dashboard");
@@ -155,6 +161,7 @@ function FormLogin() {
         password,
       });
       if (error) {
+        console.warn("Galat masuk:", error.code, error.status);
         setGalat(pesanGalat[error.code] ?? "Gagal masuk. Coba lagi.");
       } else {
         // Baca role dari database: admin ke /admin, pelajar ke /dashboard.

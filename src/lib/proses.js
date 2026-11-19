@@ -3,6 +3,7 @@
 // Bagian di antara $ ... $ ditulis dalam LaTeX dan digambar oleh komponen Teks.
 // Setiap fungsi mengembalikan:
 //   { ringkasan: [{ label, nilai }], langkah: ["...", "..."] }  atau  { galat: "..." }
+// Mode Statistika juga mengembalikan { data, kuartil } untuk grafik.
 // Baris langkah yang diawali "#" dianggap judul kelompok.
 
 import { evaluate, format, parse } from "mathjs";
@@ -26,6 +27,29 @@ function rapi(x) {
 function daftar(arr, maks = 15) {
   if (arr.length <= maks) return arr.join(", ");
   return `${arr.slice(0, 10).join(", ")}, \\ldots, ${arr[arr.length - 1]}`;
+}
+
+// Median dari data yang SUDAH terurut
+function medianUrut(urut) {
+  const n = urut.length;
+  if (n % 2 === 1) return urut[(n - 1) / 2];
+  return (urut[n / 2 - 1] + urut[n / 2]) / 2;
+}
+
+// Kuartil: median bagian bawah (Q1) dan atas (Q3).
+// Bila n ganjil, data tengah dikeluarkan dari kedua bagian.
+function hitungKuartil(urut) {
+  const n = urut.length;
+  const bawah = urut.slice(0, Math.floor(n / 2));
+  const atas = urut.slice(Math.ceil(n / 2));
+  const q1 = medianUrut(bawah);
+  const q2 = medianUrut(urut);
+  const q3 = medianUrut(atas);
+  const iqr = q3 - q1;
+  const batasBawah = q1 - 1.5 * iqr;
+  const batasAtas = q3 + 1.5 * iqr;
+  const pencilan = urut.filter((x) => x < batasBawah || x > batasAtas);
+  return { q1, q2, q3, iqr, batasBawah, batasAtas, pencilan };
 }
 
 // ---------- Mode Dasar ----------
@@ -176,7 +200,17 @@ export function prosesStatistika(teks) {
   const varians = jumlahKuadrat / (n - 1);
   const simpangan = Math.sqrt(varians);
 
+  // Kuartil, IQR, pencilan
+  const kuartil = hitungKuartil(urut);
+  const { q1, q3, iqr, batasBawah, batasAtas, pencilan } = kuartil;
+  const nilaiPencilan = pencilan.length ? `$${daftar(pencilan, 8)}$` : "Tidak ada";
+  const langkahPencilan = pencilan.length
+    ? t`Pencilan: data di luar batas ini dianggap pencilan, yaitu $${daftar(pencilan, 8)}$.`
+    : "Pencilan: tidak ada data di luar batas, jadi tidak ada pencilan.";
+
   return {
+    data,
+    kuartil,
     ringkasan: [
       { label: "Banyak data", nilai: `$${n}$` },
       { label: t`Mean ($\bar{x}$)`, nilai: `$${rapi(mean)}$` },
@@ -184,8 +218,15 @@ export function prosesStatistika(teks) {
       { label: "Modus", nilai: nilaiModus },
       { label: t`Varians sampel ($s^2$)`, nilai: `$${rapi(varians)}$` },
       { label: t`Simpangan baku sampel ($s$)`, nilai: `$${rapi(simpangan)}$` },
+      { label: "Minimum", nilai: `$${rapi(urut[0])}$` },
+      { label: "Maksimum", nilai: `$${rapi(urut[n - 1])}$` },
+      { label: t`Kuartil 1 ($Q_1$)`, nilai: `$${rapi(q1)}$` },
+      { label: t`Kuartil 3 ($Q_3$)`, nilai: `$${rapi(q3)}$` },
+      { label: t`Rentang antarkuartil (IQR)`, nilai: `$${rapi(iqr)}$` },
+      { label: "Pencilan", nilai: nilaiPencilan },
     ],
     langkah: [
+      "# Ukuran pemusatan dan penyebaran",
       t`Banyak data: $n = ${n}$`,
       t`Urutkan dari yang terkecil: $${daftar(urut)}$`,
       t`Mean: $\bar{x} = \dfrac{\sum x}{n} = \dfrac{${rapi(jumlah)}}{${n}} = ${rapi(mean)}$`,
@@ -194,6 +235,11 @@ export function prosesStatistika(teks) {
       t`Jumlah kuadrat selisih: $\sum (x - \bar{x})^2 = ${rapi(jumlahKuadrat)}$`,
       t`Varians sampel: $s^2 = \dfrac{\sum (x - \bar{x})^2}{n - 1} = \dfrac{${rapi(jumlahKuadrat)}}{${n} - 1} = ${rapi(varians)}$`,
       t`Simpangan baku: $s = \sqrt{s^2} = \sqrt{${rapi(varians)}} = ${rapi(simpangan)}$`,
+      "# Kuartil dan pencilan",
+      t`Kuartil: $Q_1$ adalah median bagian bawah dan $Q_3$ median bagian atas (data tengah dikeluarkan bila $n$ ganjil). Hasilnya $Q_1 = ${rapi(q1)}$ dan $Q_3 = ${rapi(q3)}$. Aplikasi seperti SPSS atau Excel memakai cara interpolasi, jadi angkanya bisa sedikit berbeda.`,
+      t`Rentang antarkuartil: $IQR = Q_3 - Q_1 = ${rapi(q3)} - ${rapi(q1)} = ${rapi(iqr)}$`,
+      t`Batas pencilan: batas bawah $Q_1 - 1{,}5 \times IQR = ${rapi(batasBawah)}$ dan batas atas $Q_3 + 1{,}5 \times IQR = ${rapi(batasAtas)}$`,
+      langkahPencilan,
     ],
   };
 }

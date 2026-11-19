@@ -2,11 +2,12 @@
 
 // src/app/kalkulator/page.js
 // Kalkulator 3 mode (Dasar, Peluang, Statistika): hasil ringkas + langkah penyelesaian.
-// Bagian Grafik masih placeholder (Tugas C).
+// Mode Statistika juga menampilkan grafik (histogram dan boxplot).
 
 import { useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import Teks from "@/components/Teks";
+import GrafikStatistik from "@/components/GrafikStatistik";
 
 const mode = [
   {
@@ -28,9 +29,9 @@ const mode = [
   {
     nama: "Statistika",
     hint: "Contoh: 70, 85, 90, 65, 85, 100, 78",
-    contoh: "Mean, median, modus, varians, simpangan baku",
+    contoh: "Mean, median, modus, varians, simpangan baku, kuartil, grafik",
     isiContoh: "70, 85, 90, 65, 85, 100, 78",
-    chip: ["70, 85, 90, 65, 85, 100, 78", "2, 4, 4, 4, 5, 5, 7, 9"],
+    chip: ["70, 85, 90, 65, 85, 100, 78", "2, 4, 4, 4, 5, 5, 7, 9", "10, 12, 13, 14, 15, 16, 60"],
     proses: prosesStatistika,
   },
 ];
@@ -266,25 +267,36 @@ export default function Kalkulator() {
           )}
         </section>
 
-        {/* Grafik (placeholder) */}
-        <section className={`${kartu} p-5 sm:p-6`}>
+        {/* Grafik */}
+        <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
           <JudulKartu ikon="▮" warna="bg-lavender text-brand">
             Grafik
           </JudulKartu>
-          <div className="mt-4 grid h-44 place-items-center rounded-2xl border border-dashed border-brand/25 bg-paper text-center">
-            <div>
-              <div aria-hidden="true" className="mx-auto flex h-14 items-end justify-center gap-1.5">
-                {[28, 44, 56, 40, 24].map((t, i) => (
-                  <span
-                    key={i}
-                    className={`w-4 rounded-t-md ${aksen[i % aksen.length]}`}
-                    style={{ height: `${t}px` }}
-                  />
-                ))}
-              </div>
-              <p className="mt-3 text-sm text-ink/60">Histogram dan boxplot segera hadir</p>
+
+          {hasil?.data && hasil?.kuartil ? (
+            <div key={versi} className="animate-rise">
+              <GrafikStatistik data={hasil.data} kuartil={hasil.kuartil} />
             </div>
-          </div>
+          ) : (
+            <div className="mt-4 grid h-44 place-items-center rounded-2xl border border-dashed border-brand/25 bg-paper text-center">
+              <div>
+                <div aria-hidden="true" className="mx-auto flex h-14 items-end justify-center gap-1.5">
+                  {[28, 44, 56, 40, 24].map((tinggi, i) => (
+                    <span
+                      key={i}
+                      className={`w-4 rounded-t-md ${aksen[i % aksen.length]}`}
+                      style={{ height: `${tinggi}px` }}
+                    />
+                  ))}
+                </div>
+                <p className="mt-3 px-4 text-sm text-ink/60">
+                  {aktif === 2
+                    ? "Hitung data di mode Statistika untuk melihat histogram dan boxplot."
+                    : "Grafik tersedia di mode Statistika."}
+                </p>
+              </div>
+            </div>
+          )}
         </section>
       </div>
 
