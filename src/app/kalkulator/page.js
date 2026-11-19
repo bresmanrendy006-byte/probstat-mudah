@@ -2,10 +2,11 @@
 
 // src/app/kalkulator/page.js
 // Kalkulator 3 mode (Dasar, Peluang, Statistika): hasil ringkas + langkah penyelesaian.
-// Mode Statistika juga menampilkan grafik (histogram dan boxplot).
+// Mode Statistika juga menampilkan grafik dan keterangan otomatis.
 
 import { useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
+import { keteranganStatistika } from "@/lib/keterangan";
 import Teks from "@/components/Teks";
 import GrafikStatistik from "@/components/GrafikStatistik";
 
@@ -61,6 +62,10 @@ export default function Kalkulator() {
   const [hasil, setHasil] = useState(null);
   const [versi, setVersi] = useState(0); // naik tiap kali menghitung, supaya animasi diputar ulang
   const m = mode[aktif];
+
+  // Keterangan otomatis (hanya untuk mode Statistika yang punya data)
+  const keterangan =
+    hasil?.data && hasil?.kuartil ? keteranganStatistika(hasil.data, hasil.kuartil) : null;
 
   function pilihMode(i) {
     setAktif(i);
@@ -299,6 +304,27 @@ export default function Kalkulator() {
           )}
         </section>
       </div>
+
+      {/* Keterangan otomatis (hanya mode Statistika) */}
+      {keterangan && (
+        <section key={versi} className={`${kartu} mt-6 animate-rise p-5 sm:p-6`}>
+          <JudulKartu ikon="💡" warna="bg-sun/60">
+            Keterangan otomatis
+          </JudulKartu>
+          <p className="mt-1 text-xs text-ink/60">
+            Dibuat dari aturan sederhana (bukan AI) untuk membantu membaca hasil. Anggap sebagai
+            petunjuk belajar, bukan kesimpulan pasti.
+          </p>
+          <ul className="mt-4 grid gap-3 md:grid-cols-2">
+            {keterangan.map((k, i) => (
+              <li key={k.judul} className={`min-w-0 rounded-2xl p-4 ${aksen[i % aksen.length]}`}>
+                <p className="text-sm font-bold">{k.judul}</p>
+                <p className="mt-1 text-sm text-ink/80">{k.isi}</p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <p className="mt-6 text-sm text-ink/60">
         Kalkulator bisa dipakai tanpa login. Login hanya untuk menyimpan riwayat hitungan.
