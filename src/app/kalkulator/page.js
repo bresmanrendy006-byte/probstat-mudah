@@ -1,14 +1,16 @@
 "use client";
 
 // src/app/kalkulator/page.js
-// Kalkulator 3 mode (Dasar, Peluang, Statistika): hasil ringkas + langkah penyelesaian.
-// Mode Statistika juga menampilkan grafik dan keterangan otomatis.
+// Kalkulator 6 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal.
+// Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis (mode Statistika).
 
 import { useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
+import { prosesBinomial, prosesPoisson, prosesNormal } from "@/lib/distribusi";
 import { keteranganStatistika } from "@/lib/keterangan";
 import Teks from "@/components/Teks";
 import GrafikStatistik from "@/components/GrafikStatistik";
+import GrafikDistribusi from "@/components/GrafikDistribusi";
 
 const mode = [
   {
@@ -34,6 +36,34 @@ const mode = [
     isiContoh: "70, 85, 90, 65, 85, 100, 78",
     chip: ["70, 85, 90, 65, 85, 100, 78", "2, 4, 4, 4, 5, 5, 7, 9", "10, 12, 13, 14, 15, 16, 60"],
     proses: prosesStatistika,
+  },
+  {
+    nama: "Binomial",
+    hint: "Contoh: n = 10, p = 0.5, k = 3",
+    contoh: "n percobaan, peluang sukses p, dan k sukses. Desimal pakai titik (0.5).",
+    isiContoh: "n = 10, p = 0.5, k = 3",
+    chip: ["n = 10, p = 0.5, k = 3", "n = 20, p = 0.3, k = 6"],
+    proses: prosesBinomial,
+  },
+  {
+    nama: "Poisson",
+    hint: "Contoh: lambda = 4, k = 2",
+    contoh: "Rata-rata kejadian (lambda) dan banyak kejadian k",
+    isiContoh: "lambda = 4, k = 2",
+    chip: ["lambda = 4, k = 2", "lambda = 3, k = 5"],
+    proses: prosesPoisson,
+  },
+  {
+    nama: "Normal",
+    hint: "Contoh: mu = 70, sigma = 10, x = 85",
+    contoh: "Isi mu dan sigma, lalu x (satu batas) atau a dan b (dua batas)",
+    isiContoh: "mu = 70, sigma = 10, x = 85",
+    chip: [
+      "mu = 70, sigma = 10, x = 85",
+      "mu = 100, sigma = 15, a = 85, b = 115",
+      "mu = 0, sigma = 1, x = 1.96",
+    ],
+    proses: prosesNormal,
   },
 ];
 
@@ -105,7 +135,7 @@ export default function Kalkulator() {
 
       {/* Pilihan mode */}
       <div
-        className="mt-6 inline-flex max-w-full flex-wrap gap-1 rounded-full border border-brand/10 bg-white p-1 shadow-sm"
+        className="mt-6 inline-flex max-w-full flex-wrap gap-1 rounded-3xl border border-brand/10 bg-white p-1 shadow-sm sm:rounded-full"
         role="tablist"
         aria-label="Jenis hitungan"
       >
@@ -186,7 +216,7 @@ export default function Kalkulator() {
         </section>
 
         {/* Hasil */}
-        <section className={`${kartu} p-5 sm:p-6`}>
+        <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
           <JudulKartu ikon="=" warna="bg-mint/40">
             Hasil
           </JudulKartu>
@@ -231,7 +261,7 @@ export default function Kalkulator() {
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {/* Langkah */}
-        <section className={`${kartu} p-5 sm:p-6`}>
+        <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
           <JudulKartu ikon="✎" warna="bg-peach/60">
             Langkah penyelesaian
           </JudulKartu>
@@ -282,6 +312,10 @@ export default function Kalkulator() {
             <div key={versi} className="animate-rise">
               <GrafikStatistik data={hasil.data} kuartil={hasil.kuartil} />
             </div>
+          ) : hasil?.grafik ? (
+            <div key={versi} className="animate-rise">
+              <GrafikDistribusi grafik={hasil.grafik} />
+            </div>
           ) : (
             <div className="mt-4 grid h-44 place-items-center rounded-2xl border border-dashed border-brand/25 bg-paper text-center">
               <div>
@@ -297,7 +331,9 @@ export default function Kalkulator() {
                 <p className="mt-3 px-4 text-sm text-ink/60">
                   {aktif === 2
                     ? "Hitung data di mode Statistika untuk melihat histogram dan boxplot."
-                    : "Grafik tersedia di mode Statistika."}
+                    : aktif >= 3
+                      ? "Hitung dulu untuk melihat grafik distribusinya."
+                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, dan Normal."}
                 </p>
               </div>
             </div>
