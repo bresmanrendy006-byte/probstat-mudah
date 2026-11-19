@@ -73,9 +73,9 @@ grant execute on function public.is_admin() to authenticated;
 -- =====================================================================
 -- 3. TRIGGER: profil dibuat otomatis saat pengguna daftar
 -- =====================================================================
--- Role selalu 'pelajar' (default kolom). Admin dibuat manual lewat SQL (bagian 7).
+-- Role selalu 'pelajar' (default kolom). Admin dibuat manual lewat SQL (bagian 8).
 
-create or replace function public.handle_new_user()
+create or replace function public.buat_profil()
 returns trigger
 language plpgsql
 security definer
@@ -91,12 +91,12 @@ begin
 end;
 $$;
 
-revoke execute on function public.handle_new_user() from public, anon, authenticated;
+revoke execute on function public.buat_profil() from public, anon, authenticated;
 
-drop trigger if exists on_auth_user_created on auth.users;
-create trigger on_auth_user_created
+drop trigger if exists saat_user_baru on auth.users;
+create trigger saat_user_baru
   after insert on auth.users
-  for each row execute function public.handle_new_user();
+  for each row execute function public.buat_profil();
 
 -- =====================================================================
 -- 4. EMAIL DI PROFILES (untuk panel admin; tanpa service role key)
