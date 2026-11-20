@@ -130,15 +130,25 @@ export default function Privasi() {
         </Bagian>
 
         <Bagian judul="11. Kontak">
-          <p>
-            Pertanyaan atau permintaan soal data pribadi:{" "}
-            <a
-              href="mailto:bresmanrendy006@gmail.com"
-              className="font-semibold text-brand underline underline-offset-2"
-            >
-              bresmanrendy006@gmail.com
-            </a>
-          </p>
+          <p>Pertanyaan atau permintaan soal data pribadi bisa dikirim ke salah satu email berikut:</p>
+          <ul className="list-disc space-y-1.5 pl-5">
+            {[
+              "bresmanrendy006@gmail.com",
+              "vionapardede22@gmail.com",
+              "gloriasimaremare07@gmail.com",
+              "erosindah7@gmail.com",
+              "valdysimbolon@gmail.com",
+            ].map((e) => (
+              <li key={e}>
+                <a
+                  href={`mailto:${e}`}
+                  className="font-semibold text-brand underline underline-offset-2"
+                >
+                  {e}
+                </a>
+              </li>
+            ))}
+          </ul>
         </Bagian>
       </div>
     </article>

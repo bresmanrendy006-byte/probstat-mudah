@@ -3,8 +3,9 @@
 // src/app/kalkulator/page.js
 // Kalkulator 7 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t.
 // Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis.
+// Di layar sempit, setelah menghitung layar digulir ke kartu Hasil.
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import { prosesBinomial, prosesPoisson, prosesNormal } from "@/lib/distribusi";
 import { prosesUjiT } from "@/lib/uji";
@@ -115,6 +116,7 @@ export default function Kalkulator() {
   const [teks, setTeks] = useState("");
   const [hasil, setHasil] = useState(null);
   const [versi, setVersi] = useState(0); // naik tiap kali menghitung, supaya animasi diputar ulang
+  const hasilRef = useRef(null);
 
   // Isian khusus mode Uji t
   const [jenis, setJenis] = useState("satu");
@@ -132,6 +134,17 @@ export default function Kalkulator() {
     (hasil?.data && hasil?.kuartil ? keteranganStatistika(hasil.data, hasil.kuartil) : null);
 
   const kosong = m.uji ? !dataA && !dataB && !mu0 && !hasil : !teks && !hasil;
+
+  // Di layar sempit (kartu Hasil ada di bawah Input), gulir ke Hasil setelah menghitung.
+  useEffect(() => {
+    if (versi === 0) return;
+    if (!window.matchMedia("(max-width: 767px)").matches) return;
+    const kurangiGerak = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    hasilRef.current?.scrollIntoView({
+      behavior: kurangiGerak ? "auto" : "smooth",
+      block: "start",
+    });
+  }, [versi]);
 
   function pilihMode(i) {
     setAktif(i);
@@ -375,7 +388,7 @@ export default function Kalkulator() {
         </section>
 
         {/* Hasil */}
-        <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
+        <section ref={hasilRef} className={`${kartu} min-w-0 scroll-mt-28 p-5 sm:p-6`}>
           <JudulKartu ikon="=" warna="bg-mint/40">
             Hasil
           </JudulKartu>

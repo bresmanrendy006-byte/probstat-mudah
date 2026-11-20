@@ -72,6 +72,12 @@ export default function Navbar() {
     return () => document.removeEventListener("keydown", saatTekan);
   }, [buka]);
 
+  // Klik pada tautan atau tombol di area akun (Login, Panel Admin, Logout) menutup menu,
+  // walaupun alamat halaman tidak berubah (misalnya menekan Login saat sudah di /login).
+  function saatKlikAkun(e) {
+    if (e.target.closest("a, button")) setBuka(false);
+  }
+
   return (
     // pointer-events-none: area kosong di kiri/kanan pil tidak menghalangi klik ke halaman
     <header className="pointer-events-none sticky top-0 z-50 px-3 pt-3 sm:px-4">
@@ -139,7 +145,10 @@ export default function Navbar() {
               </li>
             );
           })}
-          <li className="mt-1 border-t border-brand/10 pt-3 lg:ml-2 lg:mt-0 lg:border-0 lg:pt-0">
+          <li
+            onClick={saatKlikAkun}
+            className="mt-1 border-t border-brand/10 pt-3 lg:ml-2 lg:mt-0 lg:border-0 lg:pt-0"
+          >
             <TombolAkun />
           </li>
         </ul>
