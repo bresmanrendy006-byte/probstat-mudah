@@ -1,16 +1,18 @@
 "use client";
 
 // src/app/kalkulator/page.js
-// Kalkulator 6 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal.
-// Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis (mode Statistika).
+// Kalkulator 7 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t.
+// Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis.
 
 import { useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import { prosesBinomial, prosesPoisson, prosesNormal } from "@/lib/distribusi";
+import { prosesUjiT } from "@/lib/uji";
 import { keteranganStatistika } from "@/lib/keterangan";
 import Teks from "@/components/Teks";
 import GrafikStatistik from "@/components/GrafikStatistik";
 import GrafikDistribusi from "@/components/GrafikDistribusi";
+import GrafikT from "@/components/GrafikT";
 
 const mode = [
   {
@@ -65,9 +67,31 @@ const mode = [
     ],
     proses: prosesNormal,
   },
+  {
+    nama: "Uji t",
+    uji: true,
+    contoh: "Bandingkan rata-rata: satu sampel, dua sampel bebas, atau berpasangan (dua arah).",
+  },
 ];
 
+// Pengaturan khusus mode Uji t
+const jenisUji = [
+  { kode: "satu", nama: "Satu sampel", labelA: "Data sampel", labelB: "" },
+  { kode: "bebas", nama: "Dua sampel bebas", labelA: "Kelompok A", labelB: "Kelompok B" },
+  { kode: "pasangan", nama: "Berpasangan", labelA: "Pengukuran 1 (A)", labelB: "Pengukuran 2 (B)" },
+];
+
+const contohUji = {
+  satu: { a: "70, 85, 90, 65, 85, 100, 78", b: "", mu0: "75" },
+  bebas: { a: "70, 75, 80, 85, 90", b: "60, 65, 70, 75, 80", mu0: "" },
+  pasangan: { a: "60, 70, 65, 80, 75", b: "68, 75, 70, 88, 79", mu0: "" },
+};
+
+const pilihanAlpha = ["0.01", "0.05", "0.1"];
+
 const kartu = "rounded-3xl border border-brand/10 bg-white shadow-hard";
+const isian =
+  "mt-2 w-full rounded-2xl border border-brand/20 bg-paper p-4 text-sm outline-none transition placeholder:text-ink/40 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15";
 
 // Warna kotak hasil, dipakai bergantian.
 const aksen = ["bg-lavender", "bg-mint/30", "bg-peach/40", "bg-rose/40", "bg-sun/40"];
@@ -91,15 +115,35 @@ export default function Kalkulator() {
   const [teks, setTeks] = useState("");
   const [hasil, setHasil] = useState(null);
   const [versi, setVersi] = useState(0); // naik tiap kali menghitung, supaya animasi diputar ulang
-  const m = mode[aktif];
 
-  // Keterangan otomatis (hanya untuk mode Statistika yang punya data)
+  // Isian khusus mode Uji t
+  const [jenis, setJenis] = useState("satu");
+  const [dataA, setDataA] = useState("");
+  const [dataB, setDataB] = useState("");
+  const [mu0, setMu0] = useState("");
+  const [alpha, setAlpha] = useState("0.05");
+
+  const m = mode[aktif];
+  const ju = jenisUji.find((j) => j.kode === jenis);
+
+  // Keterangan otomatis: dari hasil uji, atau dari data mode Statistika
   const keterangan =
-    hasil?.data && hasil?.kuartil ? keteranganStatistika(hasil.data, hasil.kuartil) : null;
+    hasil?.keterangan ??
+    (hasil?.data && hasil?.kuartil ? keteranganStatistika(hasil.data, hasil.kuartil) : null);
+
+  const kosong = m.uji ? !dataA && !dataB && !mu0 && !hasil : !teks && !hasil;
 
   function pilihMode(i) {
     setAktif(i);
     setTeks("");
+    setDataA("");
+    setDataB("");
+    setMu0("");
+    setHasil(null);
+  }
+
+  function pilihJenis(kode) {
+    setJenis(kode);
     setHasil(null);
   }
 
@@ -108,20 +152,41 @@ export default function Kalkulator() {
     setVersi((v) => v + 1);
   }
 
+  function hitungUji(nilai) {
+    setHasil(prosesUjiT(nilai));
+    setVersi((v) => v + 1);
+  }
+
+  function jalankan() {
+    if (m.uji) hitungUji({ jenis, a: dataA, b: dataB, mu0, alpha });
+    else hitung(teks);
+  }
+
   function pakaiContoh(isi) {
     setTeks(isi);
     hitung(isi);
   }
 
+  function pakaiContohUji() {
+    const c = contohUji[jenis];
+    setDataA(c.a);
+    setDataB(c.b);
+    setMu0(c.mu0);
+    hitungUji({ jenis, a: c.a, b: c.b, mu0: c.mu0, alpha });
+  }
+
   function hapus() {
     setTeks("");
+    setDataA("");
+    setDataB("");
+    setMu0("");
     setHasil(null);
   }
 
   function saatTekan(e) {
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
-      hitung(teks);
+      jalankan();
     }
   }
 
@@ -157,48 +222,142 @@ export default function Kalkulator() {
 
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {/* Input */}
-        <section className={`${kartu} p-5 sm:p-6`}>
-          <label htmlFor="data" className="block text-lg font-bold">
-            Masukkan data
-          </label>
-          <p className="text-sm text-ink/60">{m.contoh}</p>
-          <textarea
-            id="data"
-            rows={5}
-            value={teks}
-            onChange={(e) => setTeks(e.target.value)}
-            onKeyDown={saatTekan}
-            placeholder={m.hint}
-            className="mt-3 w-full rounded-2xl border border-brand/20 bg-paper p-4 text-sm outline-none transition placeholder:text-ink/40 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15"
-          />
+        <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
+          {m.uji ? (
+            <>
+              <h2 className="text-lg font-bold">Masukkan data</h2>
+              <p className="text-sm text-ink/60">{m.contoh}</p>
 
-          <div className="mt-3">
-            <p className="text-xs font-bold uppercase tracking-wide text-ink/60">Contoh cepat</p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {m.chip.map((c) => (
-                <button
-                  key={c}
-                  type="button"
-                  onClick={() => pakaiContoh(c)}
-                  className="rounded-full bg-lavender px-3.5 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 hover:bg-sun"
-                >
-                  {c}
-                </button>
-              ))}
-            </div>
-          </div>
+              {/* Jenis uji */}
+              <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Jenis uji t">
+                {jenisUji.map((j) => (
+                  <button
+                    key={j.kode}
+                    type="button"
+                    aria-pressed={jenis === j.kode}
+                    onClick={() => pilihJenis(j.kode)}
+                    className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                      jenis === j.kode
+                        ? "bg-brand text-white shadow-sm"
+                        : "bg-lavender hover:bg-sun"
+                    }`}
+                  >
+                    {j.nama}
+                  </button>
+                ))}
+              </div>
+
+              <label htmlFor="data-a" className="mt-4 block text-sm font-bold">
+                {ju.labelA}
+              </label>
+              <textarea
+                id="data-a"
+                rows={3}
+                value={dataA}
+                onChange={(e) => setDataA(e.target.value)}
+                onKeyDown={saatTekan}
+                placeholder="Contoh: 70, 85, 90, 65, 85"
+                className={isian}
+              />
+
+              {jenis !== "satu" && (
+                <>
+                  <label htmlFor="data-b" className="mt-4 block text-sm font-bold">
+                    {ju.labelB}
+                  </label>
+                  <textarea
+                    id="data-b"
+                    rows={3}
+                    value={dataB}
+                    onChange={(e) => setDataB(e.target.value)}
+                    onKeyDown={saatTekan}
+                    placeholder="Contoh: 60, 65, 70, 75, 80"
+                    className={isian}
+                  />
+                </>
+              )}
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                {jenis === "satu" && (
+                  <div>
+                    <label htmlFor="mu0" className="block text-sm font-bold">
+                      Nilai hipotesis (μ₀)
+                    </label>
+                    <input
+                      id="mu0"
+                      inputMode="decimal"
+                      value={mu0}
+                      onChange={(e) => setMu0(e.target.value)}
+                      onKeyDown={saatTekan}
+                      placeholder="Contoh: 75"
+                      className={`${isian} p-3`}
+                    />
+                  </div>
+                )}
+                <div>
+                  <label htmlFor="alpha" className="block text-sm font-bold">
+                    Taraf signifikansi (α)
+                  </label>
+                  <select
+                    id="alpha"
+                    value={alpha}
+                    onChange={(e) => setAlpha(e.target.value)}
+                    className={`${isian} p-3`}
+                  >
+                    {pilihanAlpha.map((a) => (
+                      <option key={a} value={a}>
+                        {a === "0.1" ? "0,10" : a.replace(".", ",")}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <label htmlFor="data" className="block text-lg font-bold">
+                Masukkan data
+              </label>
+              <p className="text-sm text-ink/60">{m.contoh}</p>
+              <textarea
+                id="data"
+                rows={5}
+                value={teks}
+                onChange={(e) => setTeks(e.target.value)}
+                onKeyDown={saatTekan}
+                placeholder={m.hint}
+                className={`${isian} mt-3`}
+              />
+
+              <div className="mt-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-ink/60">Contoh cepat</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {m.chip.map((c) => (
+                    <button
+                      key={c}
+                      type="button"
+                      onClick={() => pakaiContoh(c)}
+                      className="rounded-full bg-lavender px-3.5 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 hover:bg-sun"
+                    >
+                      {c}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
 
           <div className="mt-5 flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => hitung(teks)}
+              onClick={jalankan}
               className="rounded-full bg-linear-to-r from-brand to-[#8b7ee8] px-6 py-2.5 font-semibold text-white shadow-[0_12px_24px_-10px_rgba(91,94,214,0.7)] transition hover:-translate-y-0.5 active:translate-y-0"
             >
               Hitung
             </button>
             <button
               type="button"
-              onClick={() => pakaiContoh(m.isiContoh)}
+              onClick={m.uji ? pakaiContohUji : () => pakaiContoh(m.isiContoh)}
               className="rounded-full border border-brand/20 bg-white px-5 py-2.5 font-semibold transition hover:bg-sun/50"
             >
               Coba contoh
@@ -206,7 +365,7 @@ export default function Kalkulator() {
             <button
               type="button"
               onClick={hapus}
-              disabled={!teks && !hasil}
+              disabled={kosong}
               className="rounded-full border border-brand/20 bg-white px-5 py-2.5 font-semibold transition hover:border-red-300 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:border-brand/20 disabled:hover:bg-white disabled:hover:text-ink"
             >
               Hapus
@@ -312,6 +471,10 @@ export default function Kalkulator() {
             <div key={versi} className="animate-rise">
               <GrafikStatistik data={hasil.data} kuartil={hasil.kuartil} />
             </div>
+          ) : hasil?.grafik?.jenis === "t" ? (
+            <div key={versi} className="animate-rise">
+              <GrafikT grafik={hasil.grafik} />
+            </div>
           ) : hasil?.grafik ? (
             <div key={versi} className="animate-rise">
               <GrafikDistribusi grafik={hasil.grafik} />
@@ -332,8 +495,8 @@ export default function Kalkulator() {
                   {aktif === 2
                     ? "Hitung data di mode Statistika untuk melihat histogram dan boxplot."
                     : aktif >= 3
-                      ? "Hitung dulu untuk melihat grafik distribusinya."
-                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, dan Normal."}
+                      ? "Hitung dulu untuk melihat grafiknya."
+                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, Normal, dan Uji t."}
                 </p>
               </div>
             </div>
@@ -341,7 +504,7 @@ export default function Kalkulator() {
         </section>
       </div>
 
-      {/* Keterangan otomatis (hanya mode Statistika) */}
+      {/* Keterangan otomatis */}
       {keterangan && (
         <section key={versi} className={`${kartu} mt-6 animate-rise p-5 sm:p-6`}>
           <JudulKartu ikon="💡" warna="bg-sun/60">

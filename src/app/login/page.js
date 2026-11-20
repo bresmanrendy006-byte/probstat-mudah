@@ -92,6 +92,8 @@ function FormLogin() {
       : ""
   );
   const [info, setInfo] = useState("");
+  // True bila email yang dipakai mendaftar ternyata sudah terdaftar (tampilkan tombol Masuk).
+  const [sudahAda, setSudahAda] = useState(false);
   const [proses, setProses] = useState(false);
 
   const aturanNama = [[nama.trim().length >= 2 && nama.trim().length <= 50, "Nama 2 sampai 50 karakter"]];
@@ -110,12 +112,14 @@ function FormLogin() {
     setDaftar(modeDaftar);
     setGalat("");
     setInfo("");
+    setSudahAda(false);
   }
 
   async function kirim(e) {
     e.preventDefault();
     setGalat("");
     setInfo("");
+    setSudahAda(false);
 
     if (daftar && !semuaOk) {
       setGalat("Lengkapi dulu semua aturan di bawah kolom isian.");
@@ -146,6 +150,10 @@ function FormLogin() {
           pesanGalat[error.code] ??
             "Pendaftaran gagal. Periksa apakah emailnya benar dan aktif, lalu coba lagi."
         );
+      } else if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        // Supabase tidak membuat akun baru dan tidak mengirim email: emailnya sudah terdaftar.
+        setGalat("Email ini sudah terdaftar. Silakan masuk dengan email dan kata sandimu.");
+        setSudahAda(true);
       } else if (data.session) {
         // Pendaftar baru selalu "pelajar".
         router.push("/dashboard");
@@ -274,9 +282,18 @@ function FormLogin() {
           </div>
 
           {galat && (
-            <p role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
-              {galat}
-            </p>
+            <div role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
+              <p>{galat}</p>
+              {sudahAda && (
+                <button
+                  type="button"
+                  onClick={() => ganti(false)}
+                  className="mt-3 rounded-full bg-white px-4 py-1.5 text-xs font-semibold shadow-sm transition hover:bg-sun"
+                >
+                  Masuk dengan email ini
+                </button>
+              )}
+            </div>
           )}
           {info && (
             <p role="status" className="rounded-2xl bg-mint/30 px-4 py-3 text-sm font-semibold">
