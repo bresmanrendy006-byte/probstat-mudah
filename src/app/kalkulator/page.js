@@ -1,7 +1,7 @@
 "use client";
 
 // src/app/kalkulator/page.js
-// Kalkulator 7 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t.
+// Kalkulator 8 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t, Korelasi.
 // Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis.
 // Di layar sempit, setelah menghitung layar digulir ke kartu Hasil.
 
@@ -9,11 +9,13 @@ import { useEffect, useRef, useState } from "react";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import { prosesBinomial, prosesPoisson, prosesNormal } from "@/lib/distribusi";
 import { prosesUjiT } from "@/lib/uji";
+import { prosesKorelasi } from "@/lib/regresi";
 import { keteranganStatistika } from "@/lib/keterangan";
 import Teks from "@/components/Teks";
 import GrafikStatistik from "@/components/GrafikStatistik";
 import GrafikDistribusi from "@/components/GrafikDistribusi";
 import GrafikT from "@/components/GrafikT";
+import GrafikScatter from "@/components/GrafikScatter";
 
 const mode = [
   {
@@ -73,6 +75,11 @@ const mode = [
     uji: true,
     contoh: "Bandingkan rata-rata: satu sampel, dua sampel bebas, atau berpasangan (dua arah).",
   },
+  {
+    nama: "Korelasi",
+    kor: true,
+    contoh: "Hubungan dua variabel: korelasi r, uji signifikansi, dan garis regresi linear.",
+  },
 ];
 
 // Pengaturan khusus mode Uji t
@@ -87,6 +94,13 @@ const contohUji = {
   bebas: { a: "70, 75, 80, 85, 90", b: "60, 65, 70, 75, 80", mu0: "" },
   pasangan: { a: "60, 70, 65, 80, 75", b: "68, 75, 70, 88, 79", mu0: "" },
 };
+
+// Contoh cepat mode Korelasi
+const contohKor = [
+  { nama: "Positif kuat", a: "1, 2, 3, 4, 5, 6, 7, 8", b: "2, 4, 5, 4, 5, 7, 8, 9" },
+  { nama: "Negatif kuat", a: "1, 2, 3, 4, 5, 6", b: "10, 8, 7, 5, 4, 2" },
+  { nama: "Hampir tidak ada hubungan", a: "1, 2, 3, 4, 5, 6, 7, 8", b: "5, 3, 6, 4, 7, 3, 6, 4" },
+];
 
 const pilihanAlpha = ["0.01", "0.05", "0.1"];
 
@@ -118,7 +132,7 @@ export default function Kalkulator() {
   const [versi, setVersi] = useState(0); // naik tiap kali menghitung, supaya animasi diputar ulang
   const hasilRef = useRef(null);
 
-  // Isian khusus mode Uji t
+  // Isian untuk mode dua kotak (Uji t dan Korelasi)
   const [jenis, setJenis] = useState("satu");
   const [dataA, setDataA] = useState("");
   const [dataB, setDataB] = useState("");
@@ -126,14 +140,15 @@ export default function Kalkulator() {
   const [alpha, setAlpha] = useState("0.05");
 
   const m = mode[aktif];
+  const duaKotak = Boolean(m.uji || m.kor);
   const ju = jenisUji.find((j) => j.kode === jenis);
 
-  // Keterangan otomatis: dari hasil uji, atau dari data mode Statistika
+  // Keterangan otomatis: dari hasil uji/korelasi, atau dari data mode Statistika
   const keterangan =
     hasil?.keterangan ??
     (hasil?.data && hasil?.kuartil ? keteranganStatistika(hasil.data, hasil.kuartil) : null);
 
-  const kosong = m.uji ? !dataA && !dataB && !mu0 && !hasil : !teks && !hasil;
+  const kosong = duaKotak ? !dataA && !dataB && !mu0 && !hasil : !teks && !hasil;
 
   // Di layar sempit (kartu Hasil ada di bawah Input), gulir ke Hasil setelah menghitung.
   useEffect(() => {
@@ -170,8 +185,14 @@ export default function Kalkulator() {
     setVersi((v) => v + 1);
   }
 
+  function hitungKor(nilai) {
+    setHasil(prosesKorelasi(nilai));
+    setVersi((v) => v + 1);
+  }
+
   function jalankan() {
     if (m.uji) hitungUji({ jenis, a: dataA, b: dataB, mu0, alpha });
+    else if (m.kor) hitungKor({ x: dataA, y: dataB, alpha });
     else hitung(teks);
   }
 
@@ -188,6 +209,12 @@ export default function Kalkulator() {
     hitungUji({ jenis, a: c.a, b: c.b, mu0: c.mu0, alpha });
   }
 
+  function pakaiContohKor(c) {
+    setDataA(c.a);
+    setDataB(c.b);
+    hitungKor({ x: c.a, y: c.b, alpha });
+  }
+
   function hapus() {
     setTeks("");
     setDataA("");
@@ -201,6 +228,12 @@ export default function Kalkulator() {
       e.preventDefault();
       jalankan();
     }
+  }
+
+  function klikContoh() {
+    if (m.uji) pakaiContohUji();
+    else if (m.kor) pakaiContohKor(contohKor[0]);
+    else pakaiContoh(m.isiContoh);
   }
 
   // Penomoran langkah: mulai dari 1 lagi setiap ada judul kelompok
@@ -236,32 +269,34 @@ export default function Kalkulator() {
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {/* Input */}
         <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
-          {m.uji ? (
+          {duaKotak ? (
             <>
               <h2 className="text-lg font-bold">Masukkan data</h2>
               <p className="text-sm text-ink/60">{m.contoh}</p>
 
-              {/* Jenis uji */}
-              <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Jenis uji t">
-                {jenisUji.map((j) => (
-                  <button
-                    key={j.kode}
-                    type="button"
-                    aria-pressed={jenis === j.kode}
-                    onClick={() => pilihJenis(j.kode)}
-                    className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
-                      jenis === j.kode
-                        ? "bg-brand text-white shadow-sm"
-                        : "bg-lavender hover:bg-sun"
-                    }`}
-                  >
-                    {j.nama}
-                  </button>
-                ))}
-              </div>
+              {/* Jenis uji (hanya Uji t) */}
+              {m.uji && (
+                <div className="mt-3 flex flex-wrap gap-2" role="group" aria-label="Jenis uji t">
+                  {jenisUji.map((j) => (
+                    <button
+                      key={j.kode}
+                      type="button"
+                      aria-pressed={jenis === j.kode}
+                      onClick={() => pilihJenis(j.kode)}
+                      className={`rounded-full px-4 py-1.5 text-xs font-semibold transition ${
+                        jenis === j.kode
+                          ? "bg-brand text-white shadow-sm"
+                          : "bg-lavender hover:bg-sun"
+                      }`}
+                    >
+                      {j.nama}
+                    </button>
+                  ))}
+                </div>
+              )}
 
               <label htmlFor="data-a" className="mt-4 block text-sm font-bold">
-                {ju.labelA}
+                {m.kor ? "Data X (variabel bebas)" : ju.labelA}
               </label>
               <textarea
                 id="data-a"
@@ -269,14 +304,14 @@ export default function Kalkulator() {
                 value={dataA}
                 onChange={(e) => setDataA(e.target.value)}
                 onKeyDown={saatTekan}
-                placeholder="Contoh: 70, 85, 90, 65, 85"
+                placeholder={m.kor ? "Contoh: 1, 2, 3, 4, 5" : "Contoh: 70, 85, 90, 65, 85"}
                 className={isian}
               />
 
-              {jenis !== "satu" && (
+              {(m.kor || jenis !== "satu") && (
                 <>
                   <label htmlFor="data-b" className="mt-4 block text-sm font-bold">
-                    {ju.labelB}
+                    {m.kor ? "Data Y (variabel terikat)" : ju.labelB}
                   </label>
                   <textarea
                     id="data-b"
@@ -284,14 +319,32 @@ export default function Kalkulator() {
                     value={dataB}
                     onChange={(e) => setDataB(e.target.value)}
                     onKeyDown={saatTekan}
-                    placeholder="Contoh: 60, 65, 70, 75, 80"
+                    placeholder={m.kor ? "Contoh: 2, 4, 5, 4, 5" : "Contoh: 60, 65, 70, 75, 80"}
                     className={isian}
                   />
                 </>
               )}
 
+              {m.kor && (
+                <div className="mt-3">
+                  <p className="text-xs font-bold uppercase tracking-wide text-ink/60">Contoh cepat</p>
+                  <div className="mt-2 flex flex-wrap gap-2">
+                    {contohKor.map((c) => (
+                      <button
+                        key={c.nama}
+                        type="button"
+                        onClick={() => pakaiContohKor(c)}
+                        className="rounded-full bg-lavender px-3.5 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 hover:bg-sun"
+                      >
+                        {c.nama}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {jenis === "satu" && (
+                {m.uji && jenis === "satu" && (
                   <div>
                     <label htmlFor="mu0" className="block text-sm font-bold">
                       Nilai hipotesis (μ₀)
@@ -370,7 +423,7 @@ export default function Kalkulator() {
             </button>
             <button
               type="button"
-              onClick={m.uji ? pakaiContohUji : () => pakaiContoh(m.isiContoh)}
+              onClick={klikContoh}
               className="rounded-full border border-brand/20 bg-white px-5 py-2.5 font-semibold transition hover:bg-sun/50"
             >
               Coba contoh
@@ -488,6 +541,10 @@ export default function Kalkulator() {
             <div key={versi} className="animate-rise">
               <GrafikT grafik={hasil.grafik} />
             </div>
+          ) : hasil?.grafik?.jenis === "scatter" ? (
+            <div key={versi} className="animate-rise">
+              <GrafikScatter grafik={hasil.grafik} />
+            </div>
           ) : hasil?.grafik ? (
             <div key={versi} className="animate-rise">
               <GrafikDistribusi grafik={hasil.grafik} />
@@ -509,7 +566,7 @@ export default function Kalkulator() {
                     ? "Hitung data di mode Statistika untuk melihat histogram dan boxplot."
                     : aktif >= 3
                       ? "Hitung dulu untuk melihat grafiknya."
-                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, Normal, dan Uji t."}
+                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, Normal, Uji t, dan Korelasi."}
                 </p>
               </div>
             </div>

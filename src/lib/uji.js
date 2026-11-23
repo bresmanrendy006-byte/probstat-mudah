@@ -85,7 +85,7 @@ function betacf(a, b, x) {
 }
 
 // Fungsi beta tak lengkap teregularisasi I_x(a, b)
-function betai(a, b, x) {
+export function betai(a, b, x) {
   if (x <= 0) return 0;
   if (x >= 1) return 1;
   const bt = Math.exp(
@@ -96,7 +96,7 @@ function betai(a, b, x) {
 }
 
 // p-value dua arah: P(|T| >= |t|)
-function pDuaArah(nilaiT, df) {
+export function pDuaArah(nilaiT, df) {
   return betai(df / 2, 0.5, df / (df + nilaiT * nilaiT));
 }
 
