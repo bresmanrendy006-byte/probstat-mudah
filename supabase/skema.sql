@@ -278,3 +278,69 @@ grant execute on function public.ubah_role(uuid, text) to authenticated;
 --   where id = (select id from auth.users where email = 'emailmu@contoh.com');
 --
 -- Jangan simpan role di user_metadata (bisa dipalsukan pengguna).
+
+
+-- =====================================================================
+-- 9. RIWAYAT HITUNGAN (kalkulator, hanya untuk pengguna yang login)
+-- =====================================================================
+-- Simpan paling banyak 50 entri terbaru per pengguna (trigger batasi_riwayat).
+-- Riwayat tidak bisa diubah (tanpa policy update), hanya dilihat, ditambah, dan dihapus.
+
+create table if not exists public.riwayat_hitungan (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  jenis text not null check (char_length(jenis) between 1 and 30),
+  input jsonb not null check (char_length(input::text) <= 5000),
+  hasil jsonb not null check (char_length(hasil::text) <= 5000),
+  dibuat timestamptz not null default now()
+);
+
+create index if not exists riwayat_user_idx
+  on public.riwayat_hitungan (user_id, dibuat desc);
+
+alter table public.riwayat_hitungan enable row level security;
+
+drop policy if exists "riwayat: lihat milik sendiri" on public.riwayat_hitungan;
+create policy "riwayat: lihat milik sendiri" on public.riwayat_hitungan
+  for select to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists "riwayat: tambah milik sendiri" on public.riwayat_hitungan;
+create policy "riwayat: tambah milik sendiri" on public.riwayat_hitungan
+  for insert to authenticated with check (user_id = (select auth.uid()));
+
+drop policy if exists "riwayat: hapus milik sendiri" on public.riwayat_hitungan;
+create policy "riwayat: hapus milik sendiri" on public.riwayat_hitungan
+  for delete to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists "admin lihat semua riwayat" on public.riwayat_hitungan;
+create policy "admin lihat semua riwayat" on public.riwayat_hitungan
+  for select to authenticated using (public.is_admin());
+
+revoke all on public.riwayat_hitungan from anon;
+revoke update on public.riwayat_hitungan from authenticated;
+
+create or replace function public.batasi_riwayat()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $$
+begin
+  delete from public.riwayat_hitungan
+  where user_id = new.user_id
+    and id not in (
+      select id from public.riwayat_hitungan
+      where user_id = new.user_id
+      order by dibuat desc, id desc
+      limit 50
+    );
+  return null;
+end;
+$$;
+
+revoke execute on function public.batasi_riwayat() from public, anon, authenticated;
+
+drop trigger if exists batasi_riwayat on public.riwayat_hitungan;
+create trigger batasi_riwayat
+  after insert on public.riwayat_hitungan
+  for each row execute function public.batasi_riwayat();
