@@ -1,7 +1,7 @@
 "use client";
 
 // src/app/kalkulator/page.js
-// Kalkulator 8 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t, Korelasi.
+// Kalkulator 9 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t, Korelasi, ANOVA.
 // Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis.
 // Di layar sempit, setelah menghitung layar digulir ke kartu Hasil.
 
@@ -10,12 +10,14 @@ import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import { prosesBinomial, prosesPoisson, prosesNormal } from "@/lib/distribusi";
 import { prosesUjiT } from "@/lib/uji";
 import { prosesKorelasi } from "@/lib/regresi";
+import { prosesAnova } from "@/lib/anova";
 import { keteranganStatistika } from "@/lib/keterangan";
 import Teks from "@/components/Teks";
 import GrafikStatistik from "@/components/GrafikStatistik";
 import GrafikDistribusi from "@/components/GrafikDistribusi";
 import GrafikT from "@/components/GrafikT";
 import GrafikScatter from "@/components/GrafikScatter";
+import GrafikAnova from "@/components/GrafikAnova";
 
 const mode = [
   {
@@ -80,6 +82,11 @@ const mode = [
     kor: true,
     contoh: "Hubungan dua variabel: korelasi r, uji signifikansi, dan garis regresi linear.",
   },
+  {
+    nama: "ANOVA",
+    anova: true,
+    contoh: "Bandingkan rata-rata 2 sampai 5 kelompok sekaligus (ANOVA satu arah).",
+  },
 ];
 
 // Pengaturan khusus mode Uji t
@@ -101,6 +108,27 @@ const contohKor = [
   { nama: "Negatif kuat", a: "1, 2, 3, 4, 5, 6", b: "10, 8, 7, 5, 4, 2" },
   { nama: "Hampir tidak ada hubungan", a: "1, 2, 3, 4, 5, 6, 7, 8", b: "5, 3, 6, 4, 7, 3, 6, 4" },
 ];
+
+// Mode ANOVA: nama kelompok, batas jumlah kelompok, dan contoh cepat
+const NAMA_KELOMPOK = ["A", "B", "C", "D", "E"];
+const MIN_KELOMPOK = 2;
+const MAKS_KELOMPOK = 5;
+const contohAnova = [
+  {
+    nama: "Ada perbedaan (3 kelompok)",
+    grup: ["70, 75, 80, 85, 90", "60, 65, 70, 75, 80", "80, 85, 90, 95, 100"],
+  },
+  {
+    nama: "Tidak ada perbedaan",
+    grup: ["1, 2, 3", "2, 3, 4", "3, 4, 5"],
+  },
+  {
+    nama: "Empat kelompok",
+    grup: ["5, 6, 7, 8", "6, 7, 8, 9", "9, 10, 11, 12", "4, 5, 6, 7"],
+  },
+];
+
+const grupKosong = () => ["", "", "", "", ""];
 
 const pilihanAlpha = ["0.01", "0.05", "0.1"];
 
@@ -125,6 +153,29 @@ function JudulKartu({ ikon, warna, children }) {
   );
 }
 
+// Pilihan taraf signifikansi (dipakai Uji t, Korelasi, dan ANOVA)
+function PilihAlpha({ alpha, setAlpha }) {
+  return (
+    <div>
+      <label htmlFor="alpha" className="block text-sm font-bold">
+        Taraf signifikansi (α)
+      </label>
+      <select
+        id="alpha"
+        value={alpha}
+        onChange={(e) => setAlpha(e.target.value)}
+        className={`${isian} p-3`}
+      >
+        {pilihanAlpha.map((a) => (
+          <option key={a} value={a}>
+            {a === "0.1" ? "0,10" : a.replace(".", ",")}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
+
 export default function Kalkulator() {
   const [aktif, setAktif] = useState(2);
   const [teks, setTeks] = useState("");
@@ -139,16 +190,24 @@ export default function Kalkulator() {
   const [mu0, setMu0] = useState("");
   const [alpha, setAlpha] = useState("0.05");
 
+  // Isian mode ANOVA
+  const [grup, setGrup] = useState(grupKosong());
+  const [jumlahGrup, setJumlahGrup] = useState(3);
+
   const m = mode[aktif];
   const duaKotak = Boolean(m.uji || m.kor);
   const ju = jenisUji.find((j) => j.kode === jenis);
 
-  // Keterangan otomatis: dari hasil uji/korelasi, atau dari data mode Statistika
+  // Keterangan otomatis: dari hasil uji/korelasi/ANOVA, atau dari data mode Statistika
   const keterangan =
     hasil?.keterangan ??
     (hasil?.data && hasil?.kuartil ? keteranganStatistika(hasil.data, hasil.kuartil) : null);
 
-  const kosong = duaKotak ? !dataA && !dataB && !mu0 && !hasil : !teks && !hasil;
+  const kosong = m.anova
+    ? grup.every((g) => !g) && !hasil
+    : duaKotak
+      ? !dataA && !dataB && !mu0 && !hasil
+      : !teks && !hasil;
 
   // Di layar sempit (kartu Hasil ada di bawah Input), gulir ke Hasil setelah menghitung.
   useEffect(() => {
@@ -167,6 +226,8 @@ export default function Kalkulator() {
     setDataA("");
     setDataB("");
     setMu0("");
+    setGrup(grupKosong());
+    setJumlahGrup(3);
     setHasil(null);
   }
 
@@ -190,9 +251,15 @@ export default function Kalkulator() {
     setVersi((v) => v + 1);
   }
 
+  function hitungAnova(kelompok) {
+    setHasil(prosesAnova({ kelompok, alpha }));
+    setVersi((v) => v + 1);
+  }
+
   function jalankan() {
     if (m.uji) hitungUji({ jenis, a: dataA, b: dataB, mu0, alpha });
     else if (m.kor) hitungKor({ x: dataA, y: dataB, alpha });
+    else if (m.anova) hitungAnova(grup.slice(0, jumlahGrup));
     else hitung(teks);
   }
 
@@ -215,11 +282,38 @@ export default function Kalkulator() {
     hitungKor({ x: c.a, y: c.b, alpha });
   }
 
+  function pakaiContohAnova(c) {
+    const baru = grupKosong();
+    c.grup.forEach((g, i) => {
+      baru[i] = g;
+    });
+    setGrup(baru);
+    setJumlahGrup(c.grup.length);
+    hitungAnova(c.grup);
+  }
+
+  function ubahGrup(i, nilai) {
+    setGrup((lama) => lama.map((g, j) => (j === i ? nilai : g)));
+  }
+
+  function tambahGrup() {
+    setJumlahGrup((n) => Math.min(MAKS_KELOMPOK, n + 1));
+  }
+
+  function kurangiGrup() {
+    if (jumlahGrup <= MIN_KELOMPOK) return;
+    // kosongkan kolom yang dihapus supaya datanya tidak ikut terhitung
+    setGrup((lama) => lama.map((g, j) => (j === jumlahGrup - 1 ? "" : g)));
+    setJumlahGrup((n) => n - 1);
+    setHasil(null);
+  }
+
   function hapus() {
     setTeks("");
     setDataA("");
     setDataB("");
     setMu0("");
+    setGrup(grupKosong());
     setHasil(null);
   }
 
@@ -233,6 +327,7 @@ export default function Kalkulator() {
   function klikContoh() {
     if (m.uji) pakaiContohUji();
     else if (m.kor) pakaiContohKor(contohKor[0]);
+    else if (m.anova) pakaiContohAnova(contohAnova[0]);
     else pakaiContoh(m.isiContoh);
   }
 
@@ -269,7 +364,68 @@ export default function Kalkulator() {
       <div className="mt-6 grid gap-6 md:grid-cols-2">
         {/* Input */}
         <section className={`${kartu} min-w-0 p-5 sm:p-6`}>
-          {duaKotak ? (
+          {m.anova ? (
+            <>
+              <h2 className="text-lg font-bold">Masukkan data</h2>
+              <p className="text-sm text-ink/60">{m.contoh}</p>
+
+              {Array.from({ length: jumlahGrup }, (_, i) => (
+                <div key={i}>
+                  <label htmlFor={`grup-${i}`} className="mt-4 block text-sm font-bold">
+                    Kelompok {NAMA_KELOMPOK[i]}
+                  </label>
+                  <textarea
+                    id={`grup-${i}`}
+                    rows={2}
+                    value={grup[i]}
+                    onChange={(e) => ubahGrup(i, e.target.value)}
+                    onKeyDown={saatTekan}
+                    placeholder="Contoh: 70, 75, 80, 85, 90"
+                    className={isian}
+                  />
+                </div>
+              ))}
+
+              <div className="mt-3 flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={tambahGrup}
+                  disabled={jumlahGrup >= MAKS_KELOMPOK}
+                  className="rounded-full bg-lavender px-4 py-1.5 text-xs font-semibold transition hover:bg-sun disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-lavender"
+                >
+                  + Tambah kelompok
+                </button>
+                <button
+                  type="button"
+                  onClick={kurangiGrup}
+                  disabled={jumlahGrup <= MIN_KELOMPOK}
+                  className="rounded-full bg-lavender px-4 py-1.5 text-xs font-semibold transition hover:bg-sun disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-lavender"
+                >
+                  − Kurangi kelompok
+                </button>
+              </div>
+
+              <div className="mt-3">
+                <p className="text-xs font-bold uppercase tracking-wide text-ink/60">Contoh cepat</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {contohAnova.map((c) => (
+                    <button
+                      key={c.nama}
+                      type="button"
+                      onClick={() => pakaiContohAnova(c)}
+                      className="rounded-full bg-lavender px-3.5 py-1.5 text-xs font-semibold transition hover:-translate-y-0.5 hover:bg-sun"
+                    >
+                      {c.nama}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                <PilihAlpha alpha={alpha} setAlpha={setAlpha} />
+              </div>
+            </>
+          ) : duaKotak ? (
             <>
               <h2 className="text-lg font-bold">Masukkan data</h2>
               <p className="text-sm text-ink/60">{m.contoh}</p>
@@ -360,23 +516,7 @@ export default function Kalkulator() {
                     />
                   </div>
                 )}
-                <div>
-                  <label htmlFor="alpha" className="block text-sm font-bold">
-                    Taraf signifikansi (α)
-                  </label>
-                  <select
-                    id="alpha"
-                    value={alpha}
-                    onChange={(e) => setAlpha(e.target.value)}
-                    className={`${isian} p-3`}
-                  >
-                    {pilihanAlpha.map((a) => (
-                      <option key={a} value={a}>
-                        {a === "0.1" ? "0,10" : a.replace(".", ",")}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <PilihAlpha alpha={alpha} setAlpha={setAlpha} />
               </div>
             </>
           ) : (
@@ -545,6 +685,10 @@ export default function Kalkulator() {
             <div key={versi} className="animate-rise">
               <GrafikScatter grafik={hasil.grafik} />
             </div>
+          ) : hasil?.grafik?.jenis === "anova" ? (
+            <div key={versi} className="animate-rise">
+              <GrafikAnova grafik={hasil.grafik} />
+            </div>
           ) : hasil?.grafik ? (
             <div key={versi} className="animate-rise">
               <GrafikDistribusi grafik={hasil.grafik} />
@@ -566,7 +710,7 @@ export default function Kalkulator() {
                     ? "Hitung data di mode Statistika untuk melihat histogram dan boxplot."
                     : aktif >= 3
                       ? "Hitung dulu untuk melihat grafiknya."
-                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, Normal, Uji t, dan Korelasi."}
+                      : "Grafik tersedia di mode Statistika, Binomial, Poisson, Normal, Uji t, Korelasi, dan ANOVA."}
                 </p>
               </div>
             </div>
