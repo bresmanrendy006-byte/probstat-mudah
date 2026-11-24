@@ -210,4 +210,124 @@ export const materiInferensial = [
       },
     ],
   },
+
+  
+  {
+    slug: "korelasi-dan-regresi",
+    judul: "Korelasi dan regresi linear",
+    kategori: "Statistika Inferensial",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`Korelasi mengukur kekuatan dan arah hubungan linear antara dua variabel numerik. Koefisien korelasi Pearson ($r$) bernilai antara $-1$ dan $1$. Tanda menunjukkan arah (positif: naik bersama, negatif: berlawanan), dan besarnya menunjukkan kekuatan hubungan.`,
+      t`Korelasi tidak sama dengan sebab-akibat. Dua variabel bisa berkorelasi tinggi tanpa yang satu menyebabkan yang lain.`,
+      t`Regresi linear sederhana membuat garis $\hat{y} = a + bx$ untuk memprediksi $y$ dari $x$. Kemiringan $b$ adalah perubahan rata-rata $y$ untuk setiap kenaikan $x$ satu satuan. Koefisien determinasi $r^2$ menyatakan proporsi variasi $y$ yang dijelaskan oleh $x$.`,
+      t`Untuk menguji apakah korelasi di populasi berbeda dari nol ($H_0: \rho = 0$), dipakai statistik uji $t$ dengan $db = n - 2$.`,
+    ],
+    rumus: [
+      {
+        nama: "Korelasi Pearson",
+        tex: t`r = \dfrac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \cdot \sum (y_i - \bar{y})^2}}`,
+      },
+      {
+        nama: "Garis regresi",
+        tex: t`\hat{y} = a + bx,\quad b = \dfrac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2},\quad a = \bar{y} - b\bar{x}`,
+      },
+      {
+        nama: "Uji t untuk korelasi",
+        tex: t`t = \dfrac{r\sqrt{n-2}}{\sqrt{1-r^2}}`,
+        ket: t`Derajat bebas $db = n - 2$.`,
+      },
+    ],
+    contoh: [
+      {
+        soal: "Data lima siswa: jam belajar (x) = 1, 2, 3, 4, 5 dan nilai (y) = 2, 4, 5, 4, 5. Tentukan r, r kuadrat, dan persamaan regresinya.",
+        diketahui: [t`$x$: $1, 2, 3, 4, 5$ dan $y$: $2, 4, 5, 4, 5$`, t`$n = 5$`],
+        ditanya: t`$r$, $r^2$, dan $\hat{y} = a + bx$`,
+        rumus: t`$r = \dfrac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sqrt{\sum (x_i - \bar{x})^2 \cdot \sum (y_i - \bar{y})^2}}$`,
+        langkah: [
+          t`Mean: $\bar{x} = 3$ dan $\bar{y} = 4$`,
+          t`Selisih $x$: $-2, -1, 0, 1, 2$ dan selisih $y$: $-2, 0, 1, 0, 1$`,
+          t`Jumlah hasil kali selisih: $4 + 0 + 0 + 0 + 2 = 6$`,
+          t`Jumlah kuadrat: $\sum (x_i - \bar{x})^2 = 10$ dan $\sum (y_i - \bar{y})^2 = 6$`,
+          t`Korelasi: $r = \dfrac{6}{\sqrt{10 \times 6}} = \dfrac{6}{7{,}746} \approx 0{,}775$, dan $r^2 = 0{,}6$`,
+          t`Kemiringan: $b = \dfrac{6}{10} = 0{,}6$, lalu $a = 4 - 0{,}6 \times 3 = 2{,}2$`,
+        ],
+        jawaban: t`$r \approx 0{,}775$ (positif dan kuat), $r^2 = 0{,}6$, dan $\hat{y} = 2{,}2 + 0{,}6x$. Sebesar $60\%$ variasi nilai dijelaskan oleh jam belajar.`,
+      },
+      {
+        soal: "Sampel 27 pasang data menghasilkan r = 0,6. Ujilah pada alpha 0,05 (dua arah) apakah korelasi populasi berbeda dari nol. Nilai kritis t dengan db = 25 adalah 2,060.",
+        diketahui: [t`$r = 0{,}6$, $n = 27$, sehingga $db = 25$`, t`Nilai kritis $\pm 2{,}060$`],
+        ditanya: "Keputusan uji korelasi",
+        rumus: t`$t = \dfrac{r\sqrt{n-2}}{\sqrt{1-r^2}}$`,
+        langkah: [
+          t`Hipotesis: $H_0: \rho = 0$ dan $H_1: \rho \neq 0$`,
+          t`Hitung: $\sqrt{n-2} = \sqrt{25} = 5$ dan $\sqrt{1 - 0{,}36} = 0{,}8$`,
+          t`Statistik uji: $t = \dfrac{0{,}6 \times 5}{0{,}8} = 3{,}75$`,
+          t`Bandingkan: $3{,}75 > 2{,}060$, jadi $t$ masuk daerah penolakan`,
+        ],
+        jawaban: t`Tolak $H_0$. Ada bukti bahwa kedua variabel berkorelasi di populasi.`,
+      },
+    ],
+  },
+
+  {
+    slug: "anova-satu-arah",
+    judul: "ANOVA satu arah",
+    kategori: "Statistika Inferensial",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`ANOVA satu arah (One-Way ANOVA) menguji apakah rata-rata tiga kelompok atau lebih sama. Memakai banyak uji t berulang meningkatkan peluang kesalahan Tipe I, sehingga ANOVA menguji semua kelompok sekaligus. Hipotesisnya: $H_0$: semua rata-rata sama, dan $H_1$: setidaknya satu rata-rata berbeda.`,
+      t`Idenya membandingkan dua jenis variasi. Variasi antar kelompok berasal dari perbedaan rata-rata kelompok, sedangkan variasi dalam kelompok berasal dari perbedaan antaranggota di kelompok yang sama. Bila variasi antar kelompok jauh lebih besar dari variasi dalam kelompok, nilai $F$ besar dan $H_0$ ditolak.`,
+      t`Bila ANOVA signifikan, kita hanya tahu ada rata-rata yang berbeda, belum tahu pasangan mana. Untuk itu dipakai uji lanjut (post hoc) seperti Tukey. Ukuran efeknya adalah $\eta^2$, yaitu proporsi variasi total yang dijelaskan oleh perbedaan kelompok.`,
+    ],
+    rumus: [
+      {
+        nama: "Statistik F",
+        tex: t`F = \dfrac{KT_{antar}}{KT_{dalam}},\quad KT = \dfrac{JK}{db}`,
+        ket: t`$KT$ adalah kuadrat tengah dan $JK$ adalah jumlah kuadrat.`,
+      },
+      {
+        nama: "Derajat bebas",
+        tex: t`db_{antar} = k - 1,\quad db_{dalam} = N - k`,
+        ket: t`$k$ banyak kelompok dan $N$ banyak seluruh data.`,
+      },
+      {
+        nama: "Ukuran efek",
+        tex: t`\eta^2 = \dfrac{JK_{antar}}{JK_{total}}`,
+        ket: t`Dengan $JK_{total} = JK_{antar} + JK_{dalam}$.`,
+      },
+    ],
+    contoh: [
+      {
+        soal: "Tiga metode belajar diuji pada tiga kelompok (masing-masing 3 siswa). Nilai A: 4, 5, 6. Nilai B: 6, 7, 8. Nilai C: 8, 9, 10. Ujilah pada alpha 0,05 apakah rata-rata ketiganya sama. Nilai kritis F dengan db (2, 6) adalah 5,143.",
+        diketahui: [t`$k = 3$, $N = 9$`, t`Mean kelompok: $5, 7, 9$ dan mean total $= 7$`, t`Nilai kritis $F = 5{,}143$`],
+        ditanya: t`Keputusan uji, dan $\eta^2$`,
+        rumus: t`$F = \dfrac{KT_{antar}}{KT_{dalam}}$`,
+        langkah: [
+          t`Hipotesis: $H_0: \mu_A = \mu_B = \mu_C$`,
+          t`$JK_{antar} = 3(5-7)^2 + 3(7-7)^2 + 3(9-7)^2 = 12 + 0 + 12 = 24$`,
+          t`$JK_{dalam}$: tiap kelompok $1 + 0 + 1 = 2$, jadi totalnya $6$`,
+          t`Derajat bebas: $db_{antar} = 2$ dan $db_{dalam} = 6$`,
+          t`Kuadrat tengah: $KT_{antar} = \dfrac{24}{2} = 12$ dan $KT_{dalam} = \dfrac{6}{6} = 1$`,
+          t`Statistik uji: $F = \dfrac{12}{1} = 12$, dan $12 > 5{,}143$`,
+          t`Ukuran efek: $\eta^2 = \dfrac{24}{24 + 6} = 0{,}8$`,
+        ],
+        jawaban: t`Tolak $H_0$. Ada perbedaan rata-rata antar metode belajar, dan sekitar $80\%$ variasi nilai dijelaskan oleh metode.`,
+      },
+      {
+        soal: "Sebuah ANOVA dengan 3 kelompok dan 33 data menghasilkan JK antar = 40 dan JK dalam = 60. Hitung F dan ambil keputusan pada alpha 0,05. Nilai kritis F dengan db (2, 30) adalah 3,316.",
+        diketahui: [t`$k = 3$, $N = 33$`, t`$JK_{antar} = 40$, $JK_{dalam} = 60$`],
+        ditanya: "Nilai F dan keputusan",
+        langkah: [
+          t`Derajat bebas: $db_{antar} = 3 - 1 = 2$ dan $db_{dalam} = 33 - 3 = 30$`,
+          t`Kuadrat tengah: $KT_{antar} = \dfrac{40}{2} = 20$ dan $KT_{dalam} = \dfrac{60}{30} = 2$`,
+          t`Statistik uji: $F = \dfrac{20}{2} = 10$`,
+          t`Bandingkan: $10 > 3{,}316$`,
+        ],
+        jawaban: t`$F = 10$, maka tolak $H_0$. Setidaknya satu rata-rata kelompok berbeda, sehingga perlu uji lanjut seperti Tukey.`,
+      },
+    ],
+  },
 ];

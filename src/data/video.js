@@ -57,7 +57,7 @@ export const bagianVideo = [
       { judul: "One-Sample T Test", id: "", slug: "uji-t" },
       { judul: "Independent-Samples T Test", id: "", slug: "uji-t" },
       { judul: "Paired-Samples T Test", id: "", slug: "uji-t" },
-      { judul: "One-Way ANOVA", id: "" },
+      { judul: "One-Way ANOVA", id: "", slug: "anova-satu-arah" },
       { judul: "Input Data dan Membaca Output SPSS", id: "", slug: "input-data-spss" },
     ],
   },

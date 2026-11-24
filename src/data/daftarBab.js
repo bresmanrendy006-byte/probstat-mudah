@@ -36,6 +36,8 @@ const susunan = [
       "kesalahan-tipe-i-ii-power",
       "distribusi-normal",
       "uji-t",
+      "korelasi-dan-regresi",
+      "anova-satu-arah",
     ],
   },
 ];

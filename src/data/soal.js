@@ -759,6 +759,111 @@ export const bankSoal = [
     benar: 2,
     pembahasan: t`Galat baku $= \dfrac{2}{\sqrt{16}} = 0{,}5$. Maka $t = \dfrac{4}{0{,}5} = 8$, dengan $db = 15$.`,
   },
+
+  
+  // ===== Korelasi dan Regresi Linear =====
+  {
+    id: "kr-001",
+    slug: "korelasi-dan-regresi",
+    pertanyaan: t`Koefisien korelasi Pearson ($r$) hanya dapat bernilai ...`,
+    pilihan: [
+      t`Antara $0$ dan $1$`,
+      t`Antara $-1$ dan $1$`,
+      t`Antara $-1$ dan $0$`,
+      t`Semua bilangan real`,
+    ],
+    benar: 1,
+    pembahasan: t`Nilai $r$ selalu berada di antara $-1$ dan $1$. Tanda menunjukkan arah, dan besarnya menunjukkan kekuatan hubungan.`,
+  },
+  {
+    id: "kr-002",
+    slug: "korelasi-dan-regresi",
+    pertanyaan: t`Korelasi antara dua variabel adalah $r = -0{,}85$. Penafsiran yang tepat adalah ...`,
+    pilihan: [
+      t`Hubungan positif yang kuat`,
+      t`Hubungan negatif yang kuat`,
+      t`Hubungan negatif yang lemah`,
+      t`Tidak ada hubungan`,
+    ],
+    benar: 1,
+    pembahasan: t`Tanda negatif berarti berlawanan arah (satu naik, yang lain turun), dan nilai $0{,}85$ yang dekat dengan $1$ berarti hubungannya kuat.`,
+  },
+  {
+    id: "kr-003",
+    slug: "korelasi-dan-regresi",
+    pertanyaan: t`Jika $r = 0{,}7$, berapa koefisien determinasi $r^2$?`,
+    pilihan: [t`$0{,}07$`, t`$0{,}49$`, t`$0{,}7$`, t`$1{,}4$`],
+    benar: 1,
+    pembahasan: t`$r^2 = 0{,}7 \times 0{,}7 = 0{,}49$, artinya sekitar $49\%$ variasi $y$ dijelaskan oleh $x$.`,
+  },
+  {
+    id: "kr-004",
+    slug: "korelasi-dan-regresi",
+    pertanyaan: t`Persamaan regresi $\hat{y} = 3 + 2x$. Berapa prediksi $y$ untuk $x = 4$?`,
+    pilihan: [t`$8$`, t`$9$`, t`$11$`, t`$14$`],
+    benar: 2,
+    pembahasan: t`$\hat{y} = 3 + 2(4) = 3 + 8 = 11$.`,
+  },
+  {
+    id: "kr-005",
+    slug: "korelasi-dan-regresi",
+    pertanyaan: t`Diketahui $\sum (x_i - \bar{x})(y_i - \bar{y}) = 30$ dan $\sum (x_i - \bar{x})^2 = 10$. Berapa kemiringan garis regresi $b$?`,
+    pilihan: [t`$0{,}33$`, t`$3$`, t`$20$`, t`$300$`],
+    benar: 1,
+    pembahasan: t`$b = \dfrac{\sum (x_i - \bar{x})(y_i - \bar{y})}{\sum (x_i - \bar{x})^2} = \dfrac{30}{10} = 3$.`,
+  },
+
+  // ===== ANOVA Satu Arah =====
+  {
+    id: "ao-001",
+    slug: "anova-satu-arah",
+    pertanyaan: t`ANOVA satu arah dipakai untuk ...`,
+    pilihan: [
+      t`Membandingkan rata-rata tiga kelompok atau lebih`,
+      t`Mengukur hubungan dua variabel numerik`,
+      t`Menghitung peluang bersyarat`,
+      t`Membandingkan satu rata-rata dengan nilai tertentu`,
+    ],
+    benar: 0,
+    pembahasan: t`ANOVA menguji kesamaan rata-rata tiga kelompok atau lebih sekaligus, tanpa menaikkan peluang kesalahan Tipe I seperti uji t berulang.`,
+  },
+  {
+    id: "ao-002",
+    slug: "anova-satu-arah",
+    pertanyaan: t`Suatu ANOVA memiliki $k = 4$ kelompok dan $N = 24$ data. Berapa $db_{dalam}$?`,
+    pilihan: [t`$3$`, t`$20$`, t`$23$`, t`$24$`],
+    benar: 1,
+    pembahasan: t`$db_{dalam} = N - k = 24 - 4 = 20$. Sedangkan $db_{antar} = k - 1 = 3$.`,
+  },
+  {
+    id: "ao-003",
+    slug: "anova-satu-arah",
+    pertanyaan: t`Diketahui $KT_{antar} = 30$ dan $KT_{dalam} = 5$. Berapa nilai $F$?`,
+    pilihan: [t`$0{,}17$`, t`$6$`, t`$25$`, t`$150$`],
+    benar: 1,
+    pembahasan: t`$F = \dfrac{KT_{antar}}{KT_{dalam}} = \dfrac{30}{5} = 6$.`,
+  },
+  {
+    id: "ao-004",
+    slug: "anova-satu-arah",
+    pertanyaan: t`Diketahui $JK_{antar} = 20$ dan $JK_{total} = 100$. Berapa $\eta^2$?`,
+    pilihan: [t`$0{,}2$`, t`$0{,}8$`, t`$5$`, t`$20$`],
+    benar: 0,
+    pembahasan: t`$\eta^2 = \dfrac{JK_{antar}}{JK_{total}} = \dfrac{20}{100} = 0{,}2$, artinya $20\%$ variasi dijelaskan oleh perbedaan kelompok.`,
+  },
+  {
+    id: "ao-005",
+    slug: "anova-satu-arah",
+    pertanyaan: t`ANOVA menghasilkan p-value $< \alpha$. Kesimpulan yang tepat adalah ...`,
+    pilihan: [
+      t`Semua rata-rata kelompok berbeda`,
+      t`Semua rata-rata kelompok sama`,
+      t`Setidaknya satu rata-rata kelompok berbeda`,
+      t`Hanya dua kelompok yang berbeda`,
+    ],
+    benar: 2,
+    pembahasan: t`$H_0$ ditolak berarti setidaknya satu rata-rata berbeda. Pasangan mana yang berbeda perlu uji lanjut seperti Tukey.`,
+  },
 ];
 
 // Peringatan otomatis (hanya saat pengembangan): slug soal yang tidak cocok dengan materi manapun.
