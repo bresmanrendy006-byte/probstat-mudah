@@ -1,10 +1,13 @@
 // src/app/dashboard/page.js
-// Dashboard pelajar: progres, skor kuis terbaru per materi, riwayat kuis, materi tersimpan, dan riwayat hitungan.
+// Dashboard pelajar: progres, skor kuis terbaru per materi, soal yang sering salah,
+// riwayat kuis, materi tersimpan, dan riwayat hitungan.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ambilDaftar } from "@/data/daftarBab";
+import { bankSoal } from "@/data/soal";
+import Teks from "@/components/Teks";
 import RiwayatHitungan from "@/components/RiwayatHitungan";
 
 export const metadata = { title: "Dashboard | ProbStat Mudah" };
@@ -70,7 +73,7 @@ export default async function Dashboard() {
   // jadi tanpa filter ini dashboard admin akan menampilkan data orang lain.
   // Skor diambil lebih banyak (50) lalu disaring per materi di bawah,
   // supaya mengulang satu kuis tidak menghabiskan jatah materi lain.
-  const [profil, progres, skor, bookmark, riwayat] = await Promise.all([
+  const [profil, progres, skor, bookmark, riwayat, jawaban] = await Promise.all([
     supabase.from("profiles").select("nama").eq("id", id).maybeSingle(),
     supabase.from("progres").select("slug").eq("user_id", id),
     supabase
@@ -91,6 +94,12 @@ export default async function Dashboard() {
       .order("dibuat", { ascending: false })
       .order("id", { ascending: false })
       .limit(10),
+    supabase
+      .from("jawaban_soal")
+      .select("soal_id, benar")
+      .eq("user_id", id)
+      .order("dibuat", { ascending: false })
+      .limit(500),
   ]);
   const tabelBelumAda = [profil, progres, skor, bookmark].some((r) => r.error);
 
@@ -128,6 +137,33 @@ export default async function Dashboard() {
   }));
   const nilaiTertinggi = riwayatKuis.length ? Math.max(...riwayatKuis.map((r) => r.nilai)) : null;
   const indeksBintang = riwayatKuis.findIndex((r) => r.nilai === nilaiTertinggi);
+
+  // Soal yang sering salah: hitung per soal berapa kali dijawab dan berapa kali salah.
+  // Hanya soal yang pernah salah; urut: salah terbanyak, lalu persentase salah, lalu id.
+  const statSoal = new Map();
+  for (const j of jawaban.data ?? []) {
+    const st = statSoal.get(j.soal_id) ?? { total: 0, salah: 0 };
+    st.total += 1;
+    if (!j.benar) st.salah += 1;
+    statSoal.set(j.soal_id, st);
+  }
+  const soalSeringSalah = [...statSoal.entries()]
+    .filter(([, st]) => st.salah > 0)
+    .map(([soalId, st]) => {
+      const soal = bankSoal.find((b) => b.id === soalId);
+      if (!soal) return null; // soal sudah tidak ada di bank soal
+      return {
+        id: soalId,
+        slug: soal.slug,
+        pertanyaan: soal.pertanyaan,
+        total: st.total,
+        salah: st.salah,
+        persen: Math.round((st.salah / st.total) * 100),
+      };
+    })
+    .filter(Boolean)
+    .sort((a, b) => b.salah - a.salah || b.persen - a.persen || a.id.localeCompare(b.id))
+    .slice(0, 5);
 
   const selesaiSet = new Set((progres.data ?? []).map((p) => p.slug));
   const perKategori = daftar.map((k) => ({
@@ -352,6 +388,56 @@ export default async function Dashboard() {
           )}
         </section>
       </div>
+
+      {/* Soal yang sering salah */}
+      <section className={`${kartu} p-5 sm:p-6`}>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">Soal yang sering salah</h2>
+          <p className="text-xs text-ink/60">5 teratas, dari jawaban kuis yang tercatat</p>
+        </div>
+        {jawaban.error ? (
+          <p role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
+            Data jawaban belum bisa dibaca. Coba muat ulang halaman.
+          </p>
+        ) : soalSeringSalah.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-brand/25 p-5 text-center">
+            <p className="text-sm text-ink/70">
+              {statSoal.size === 0
+                ? "Belum ada jawaban tercatat. Kerjakan kuis, lalu soal yang sering salah akan muncul di sini."
+                : "Belum ada soal yang salah. Pertahankan ya!"}
+            </p>
+            <Link
+              href="/materi"
+              className="mt-3 inline-block rounded-full bg-lavender px-4 py-1.5 text-sm font-semibold transition hover:bg-sun"
+            >
+              Pilih materi
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {soalSeringSalah.map((q) => (
+              <li key={q.id}>
+                <Link
+                  href={`/materi/${q.slug}#kuis`}
+                  className="flex items-start gap-3 rounded-2xl bg-lavender/40 px-4 py-3 transition hover:bg-sun/50"
+                >
+                  <span className="min-w-0 flex-1">
+                    <span className="block overflow-x-auto overflow-y-hidden py-1 text-sm font-semibold">
+                      <Teks>{q.pertanyaan}</Teks>
+                    </span>
+                    <span className="mt-1 block text-xs text-ink/60">
+                      {judulDari(q.slug)} · Salah {q.salah} dari {q.total} percobaan
+                    </span>
+                  </span>
+                  <span className="shrink-0 rounded-full bg-peach/50 px-2 py-0.5 text-xs font-bold">
+                    {q.persen}% salah
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
 
       {/* Riwayat kuis */}
       <section className={`${kartu} p-5 sm:p-6`}>
