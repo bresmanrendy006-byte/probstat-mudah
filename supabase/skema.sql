@@ -344,3 +344,40 @@ drop trigger if exists batasi_riwayat on public.riwayat_hitungan;
 create trigger batasi_riwayat
   after insert on public.riwayat_hitungan
   for each row execute function public.batasi_riwayat();
+
+  -- =====================================================================
+-- 10. JAWABAN PER SOAL (untuk "Soal yang sering salah" dan bank soal)
+-- =====================================================================
+-- Satu baris per soal per percobaan kuis. Tidak bisa diubah atau dihapus pengguna.
+-- soal_id mengacu ke id di src/data/soal.js (mis. 'psk-001'); id soal tidak boleh diubah.
+
+create table if not exists public.jawaban_soal (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  soal_id text not null check (char_length(soal_id) between 1 and 30),
+  slug text not null check (char_length(slug) between 1 and 100),
+  benar boolean not null,
+  dibuat timestamptz not null default now()
+);
+
+create index if not exists jawaban_user_soal_idx
+  on public.jawaban_soal (user_id, soal_id);
+create index if not exists jawaban_user_dibuat_idx
+  on public.jawaban_soal (user_id, dibuat desc);
+
+alter table public.jawaban_soal enable row level security;
+
+drop policy if exists "jawaban: lihat milik sendiri" on public.jawaban_soal;
+create policy "jawaban: lihat milik sendiri" on public.jawaban_soal
+  for select to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists "jawaban: tambah milik sendiri" on public.jawaban_soal;
+create policy "jawaban: tambah milik sendiri" on public.jawaban_soal
+  for insert to authenticated with check (user_id = (select auth.uid()));
+
+drop policy if exists "admin lihat semua jawaban" on public.jawaban_soal;
+create policy "admin lihat semua jawaban" on public.jawaban_soal
+  for select to authenticated using (public.is_admin());
+
+revoke all on public.jawaban_soal from anon;
+revoke update, delete on public.jawaban_soal from authenticated;

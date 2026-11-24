@@ -2,7 +2,8 @@
 
 // src/components/Kuis.js
 // Kuis pilihan ganda per materi. Bisa dikerjakan tanpa login.
-// Jika sudah login: nilai disimpan ke skor_kuis, dan nilai >= 70 menandai materi selesai di progres.
+// Jika sudah login: nilai disimpan ke skor_kuis, jawaban per soal ke jawaban_soal,
+// dan nilai >= 70 menandai materi selesai di progres.
 // Jika sudah pernah mengerjakan: tampil ringkasan + tombol "Ulangi kuis" dulu.
 
 import { useEffect, useState } from "react";
@@ -35,6 +36,7 @@ export default function Kuis({ slug, soal }) {
   const [nomor, setNomor] = useState(0); // soal ke berapa (mulai dari 0)
   const [dipilih, setDipilih] = useState(null); // pilihan yang diklik (null = belum memilih)
   const [jumlahBenar, setJumlahBenar] = useState(0);
+  const [jawaban, setJawaban] = useState([]); // [{ soal_id, benar }] satu per soal yang sudah dijawab
   const [nilai, setNilai] = useState(0);
   // "menyimpan" | "tersimpan" | "belum-login" | "gagal"
   const [statusSimpan, setStatusSimpan] = useState("menyimpan");
@@ -96,7 +98,10 @@ export default function Kuis({ slug, soal }) {
   function pilih(i) {
     if (sudahMemilih) return; // jawaban dikunci setelah dipilih
     setDipilih(i);
-    if (i === s.benar) setJumlahBenar((n) => n + 1);
+    const benar = i === s.benar;
+    if (benar) setJumlahBenar((n) => n + 1);
+    // Catat jawaban per soal (dikirim ke database saat kuis selesai)
+    setJawaban((daftar) => [...daftar, { soal_id: s.id, benar }]);
   }
 
   function lanjut() {
@@ -139,6 +144,24 @@ export default function Kuis({ slug, soal }) {
         if (errProgres) throw errProgres;
       }
 
+      // Jawaban per soal: TIDAK fatal. Skor sudah tersimpan di atas, jadi bila bagian ini
+      // gagal kita hanya mencatat di console (supaya pengguna tidak mengulang kuis dan
+      // membuat skor ganda).
+      try {
+        if (jawaban.length > 0) {
+          const baris = jawaban.map((j) => ({
+            user_id: userId,
+            soal_id: j.soal_id,
+            slug,
+            benar: j.benar,
+          }));
+          const { error: errJawaban } = await supabase.from("jawaban_soal").insert(baris);
+          if (errJawaban) throw errJawaban;
+        }
+      } catch (err) {
+        console.error("Gagal menyimpan jawaban per soal:", err);
+      }
+
       setStatusSimpan("tersimpan");
     } catch (err) {
       console.error("Gagal menyimpan skor:", err);
@@ -151,6 +174,7 @@ export default function Kuis({ slug, soal }) {
     setNomor(0);
     setDipilih(null);
     setJumlahBenar(0);
+    setJawaban([]);
     setNilai(0);
     setStatusSimpan("menyimpan");
     setMode("mengerjakan");
