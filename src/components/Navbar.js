@@ -12,6 +12,7 @@ import TombolAkun from "@/components/TombolAkun";
 const menu = [
   { nama: "Beranda", href: "/" },
   { nama: "Materi", href: "/materi" },
+  { nama: "Bank Soal", href: "/bank-soal" },
   { nama: "Video", href: "/video" },
   { nama: "Kalkulator", href: "/kalkulator" },
   { nama: "Dashboard", href: "/dashboard" },
