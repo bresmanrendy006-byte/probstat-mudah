@@ -1,10 +1,11 @@
 // src/app/dashboard/page.js
-// Dashboard pelajar: progres, skor kuis terbaru per materi, dan materi tersimpan.
+// Dashboard pelajar: progres, skor kuis terbaru per materi, materi tersimpan, dan riwayat hitungan.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ambilDaftar } from "@/data/daftarBab";
+import RiwayatHitungan from "@/components/RiwayatHitungan";
 
 export const metadata = { title: "Dashboard | ProbStat Mudah" };
 
@@ -15,6 +16,18 @@ const warnaBilah = [
   "bg-linear-to-r from-mint to-[#4fb8a3]",
   "bg-linear-to-r from-peach to-[#ff9f7a]",
 ];
+
+// Tanggal dibuat di server dengan zona WIB, supaya sama di server dan browser.
+function formatTanggal(iso) {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    timeZone: "Asia/Jakarta",
+  }).format(new Date(iso));
+}
 
 function IkonBookmark() {
   return (
@@ -44,7 +57,7 @@ export default async function Dashboard() {
   // jadi tanpa filter ini dashboard admin akan menampilkan data orang lain.
   // Skor diambil lebih banyak (50) lalu disaring per materi di bawah,
   // supaya mengulang satu kuis tidak menghabiskan jatah materi lain.
-  const [profil, progres, skor, bookmark] = await Promise.all([
+  const [profil, progres, skor, bookmark, riwayat] = await Promise.all([
     supabase.from("profiles").select("nama").eq("id", id).maybeSingle(),
     supabase.from("progres").select("slug").eq("user_id", id),
     supabase
@@ -58,8 +71,23 @@ export default async function Dashboard() {
       .select("slug")
       .eq("user_id", id)
       .order("dibuat", { ascending: false }),
+    supabase
+      .from("riwayat_hitungan")
+      .select("id, jenis, hasil, dibuat")
+      .eq("user_id", id)
+      .order("dibuat", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(10),
   ]);
   const tabelBelumAda = [profil, progres, skor, bookmark].some((r) => r.error);
+
+  // Riwayat: ambil dua angka hasil pertama untuk ditampilkan di daftar
+  const riwayatTampil = (riwayat.data ?? []).map((r) => ({
+    id: r.id,
+    jenis: r.jenis,
+    tanggal: formatTanggal(r.dibuat),
+    ringkasan: Array.isArray(r.hasil?.ringkasan) ? r.hasil.ringkasan.slice(0, 2) : [],
+  }));
 
   const nama = profil.data?.nama || claims.email?.split("@")[0] || "Pelajar";
   const daftar = ambilDaftar();
@@ -301,6 +329,21 @@ export default async function Dashboard() {
           )}
         </section>
       </div>
+
+      {/* Riwayat hitungan */}
+      <section className={`${kartu} p-5 sm:p-6`}>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">Riwayat hitungan</h2>
+          <p className="text-xs text-ink/60">10 terbaru dari maksimal 50 yang tersimpan</p>
+        </div>
+        {riwayat.error ? (
+          <p role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
+            Riwayat belum bisa dibaca. Coba muat ulang halaman.
+          </p>
+        ) : (
+          <RiwayatHitungan awal={riwayatTampil} userId={id} />
+        )}
+      </section>
     </div>
   );
 }

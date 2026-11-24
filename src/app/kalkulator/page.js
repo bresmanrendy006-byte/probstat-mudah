@@ -3,9 +3,12 @@
 // src/app/kalkulator/page.js
 // Kalkulator 9 mode: Dasar, Peluang, Statistika, Binomial, Poisson, Normal, Uji t, Korelasi, ANOVA.
 // Hasil ringkas + langkah penyelesaian + grafik + keterangan otomatis.
-// Di layar sempit, setelah menghitung layar digulir ke kartu Hasil.
+// Pengguna yang login bisa menyimpan hasil ke riwayat, dan membuka kembali lewat /kalkulator?riwayat=ID.
 
-import { useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { prosesDasar, prosesPeluang, prosesStatistika } from "@/lib/proses";
 import { prosesBinomial, prosesPoisson, prosesNormal } from "@/lib/distribusi";
 import { prosesUjiT } from "@/lib/uji";
@@ -132,6 +135,9 @@ const grupKosong = () => ["", "", "", "", ""];
 
 const pilihanAlpha = ["0.01", "0.05", "0.1"];
 
+// Batas ukuran riwayat (database menolak di atas 5000 karakter; dibuat lebih longgar dengan 4000)
+const BATAS_INPUT = 4000;
+
 const kartu = "rounded-3xl border border-brand/10 bg-white shadow-hard";
 const isian =
   "mt-2 w-full rounded-2xl border border-brand/20 bg-paper p-4 text-sm outline-none transition placeholder:text-ink/40 focus:border-brand focus:bg-white focus:ring-4 focus:ring-brand/15";
@@ -176,7 +182,10 @@ function PilihAlpha({ alpha, setAlpha }) {
   );
 }
 
-export default function Kalkulator() {
+function IsiKalkulator() {
+  const params = useSearchParams();
+  const riwayatId = /^\d+$/.test(params.get("riwayat") ?? "") ? Number(params.get("riwayat")) : null;
+
   const [aktif, setAktif] = useState(2);
   const [teks, setTeks] = useState("");
   const [hasil, setHasil] = useState(null);
@@ -194,6 +203,12 @@ export default function Kalkulator() {
   const [grup, setGrup] = useState(grupKosong());
   const [jumlahGrup, setJumlahGrup] = useState(3);
 
+  // Riwayat: undefined = belum tahu, null = belum login, string = id pengguna
+  const [userId, setUserId] = useState(undefined);
+  const [masukan, setMasukan] = useState(null); // input terakhir yang dihitung
+  const [statusSimpan, setStatusSimpan] = useState({ jenis: "", teks: "" });
+  const [memuat, setMemuat] = useState(riwayatId !== null); // true saat entri riwayat sedang diambil
+
   const m = mode[aktif];
   const duaKotak = Boolean(m.uji || m.kor);
   const ju = jenisUji.find((j) => j.kode === jenis);
@@ -209,6 +224,34 @@ export default function Kalkulator() {
       ? !dataA && !dataB && !mu0 && !hasil
       : !teks && !hasil;
 
+  // Cek status login (hanya untuk tampilan tombol; pengaman sebenarnya adalah RLS di database).
+  // Bila alamat memuat ?riwayat=ID, muat entri itu (hanya milik pengguna ini).
+  useEffect(() => {
+    let batal = false;
+    const supabase = createClient();
+    (async () => {
+      // getClaims memeriksa tiket login dari cookie, tanpa menunggu server Auth.
+      const { data } = await supabase.auth.getClaims();
+      if (batal) return;
+      const id = data?.claims?.sub ?? null;
+      setUserId(id);
+      if (id && riwayatId !== null) {
+        const { data: baris } = await supabase
+          .from("riwayat_hitungan")
+          .select("jenis, input")
+          .eq("id", riwayatId)
+          .eq("user_id", id)
+          .maybeSingle();
+        if (!batal && baris) pulihkan(baris);
+      }
+      if (!batal) setMemuat(false);
+    })();
+    return () => {
+      batal = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [riwayatId]);
+
   // Di layar sempit (kartu Hasil ada di bawah Input), gulir ke Hasil setelah menghitung.
   useEffect(() => {
     if (versi === 0) return;
@@ -220,6 +263,51 @@ export default function Kalkulator() {
     });
   }, [versi]);
 
+  // Isi ulang formulir dan hitung lagi dari entri riwayat
+  function pulihkan(baris) {
+    const i = mode.findIndex((x) => x.nama === baris.jenis);
+    if (i < 0) return;
+    const md = mode[i];
+    const inp = baris.input || {};
+    const al = inp.alpha || "0.05";
+
+    setAktif(i);
+    setTeks("");
+    setDataA("");
+    setDataB("");
+    setMu0("");
+    setGrup(grupKosong());
+    setJumlahGrup(3);
+    setAlpha(al);
+
+    if (md.uji) {
+      setJenis(inp.jenis || "satu");
+      setDataA(inp.a || "");
+      setDataB(inp.b || "");
+      setMu0(inp.mu0 || "");
+      setHasil(prosesUjiT({ ...inp, alpha: al }));
+    } else if (md.kor) {
+      setDataA(inp.a || "");
+      setDataB(inp.b || "");
+      setHasil(prosesKorelasi({ x: inp.a, y: inp.b, alpha: al }));
+    } else if (md.anova) {
+      const daftar = Array.isArray(inp.grup) ? inp.grup : [];
+      const baru = grupKosong();
+      daftar.slice(0, MAKS_KELOMPOK).forEach((g, j) => {
+        baru[j] = String(g);
+      });
+      setGrup(baru);
+      setJumlahGrup(Math.max(MIN_KELOMPOK, Math.min(MAKS_KELOMPOK, daftar.length)));
+      setHasil(prosesAnova({ kelompok: daftar, alpha: al }));
+    } else {
+      setTeks(inp.teks || "");
+      setHasil(md.proses(inp.teks || ""));
+    }
+    setMasukan(inp);
+    setStatusSimpan({ jenis: "", teks: "" });
+    setVersi((v) => v + 1);
+  }
+
   function pilihMode(i) {
     setAktif(i);
     setTeks("");
@@ -229,30 +317,41 @@ export default function Kalkulator() {
     setGrup(grupKosong());
     setJumlahGrup(3);
     setHasil(null);
+    setMasukan(null);
+    setStatusSimpan({ jenis: "", teks: "" });
   }
 
   function pilihJenis(kode) {
     setJenis(kode);
     setHasil(null);
+    setMasukan(null);
   }
 
   function hitung(isi) {
     setHasil(m.proses(isi));
+    setMasukan({ teks: isi });
+    setStatusSimpan({ jenis: "", teks: "" });
     setVersi((v) => v + 1);
   }
 
   function hitungUji(nilai) {
     setHasil(prosesUjiT(nilai));
+    setMasukan({ jenis: nilai.jenis, a: nilai.a, b: nilai.b, mu0: nilai.mu0, alpha: nilai.alpha });
+    setStatusSimpan({ jenis: "", teks: "" });
     setVersi((v) => v + 1);
   }
 
   function hitungKor(nilai) {
     setHasil(prosesKorelasi(nilai));
+    setMasukan({ a: nilai.x, b: nilai.y, alpha: nilai.alpha });
+    setStatusSimpan({ jenis: "", teks: "" });
     setVersi((v) => v + 1);
   }
 
   function hitungAnova(kelompok) {
     setHasil(prosesAnova({ kelompok, alpha }));
+    setMasukan({ grup: kelompok, alpha });
+    setStatusSimpan({ jenis: "", teks: "" });
     setVersi((v) => v + 1);
   }
 
@@ -306,6 +405,7 @@ export default function Kalkulator() {
     setGrup((lama) => lama.map((g, j) => (j === jumlahGrup - 1 ? "" : g)));
     setJumlahGrup((n) => n - 1);
     setHasil(null);
+    setMasukan(null);
   }
 
   function hapus() {
@@ -315,6 +415,8 @@ export default function Kalkulator() {
     setMu0("");
     setGrup(grupKosong());
     setHasil(null);
+    setMasukan(null);
+    setStatusSimpan({ jenis: "", teks: "" });
   }
 
   function saatTekan(e) {
@@ -329,6 +431,34 @@ export default function Kalkulator() {
     else if (m.kor) pakaiContohKor(contohKor[0]);
     else if (m.anova) pakaiContohAnova(contohAnova[0]);
     else pakaiContoh(m.isiContoh);
+  }
+
+  // Simpan hasil ke riwayat (user_id diisi otomatis oleh database lewat auth.uid())
+  async function simpan() {
+    if (!userId || !masukan || !hasil?.ringkasan) return;
+    if (JSON.stringify(masukan).length > BATAS_INPUT) {
+      setStatusSimpan({
+        jenis: "galat",
+        teks: "Datanya terlalu panjang untuk disimpan ke riwayat (maksimal sekitar 4.000 karakter). Hasil tetap bisa dipakai di sini.",
+      });
+      return;
+    }
+    setStatusSimpan({ jenis: "proses", teks: "Menyimpan..." });
+    const supabase = createClient();
+    const { error } = await supabase.from("riwayat_hitungan").insert({
+      jenis: m.nama,
+      input: masukan,
+      hasil: { ringkasan: hasil.ringkasan },
+    });
+    if (error) {
+      console.warn("Galat simpan riwayat:", error.code);
+      setStatusSimpan({ jenis: "galat", teks: "Gagal menyimpan. Coba lagi sebentar lagi." });
+    } else {
+      setStatusSimpan({
+        jenis: "ok",
+        teks: "Tersimpan di riwayat. Lihat di Dashboard (maksimal 50 entri terbaru).",
+      });
+    }
   }
 
   // Penomoran langkah: mulai dari 1 lagi setiap ada judul kelompok
@@ -586,7 +716,13 @@ export default function Kalkulator() {
             Hasil
           </JudulKartu>
 
-          {!hasil && (
+          {!hasil && memuat && (
+            <p role="status" className="mt-3 text-sm font-semibold text-brand">
+              Memuat riwayat...
+            </p>
+          )}
+
+          {!hasil && !memuat && (
             <p className="mt-3 text-sm text-ink/60">
               Belum ada hasil. Isi data lalu tekan Hitung, atau pilih salah satu contoh cepat.
             </p>
@@ -620,6 +756,41 @@ export default function Kalkulator() {
                 </div>
               ))}
             </dl>
+          )}
+
+          {/* Simpan ke riwayat */}
+          {hasil?.ringkasan && userId !== undefined && (
+            <div className="mt-4 border-t border-brand/10 pt-4">
+              {userId ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={simpan}
+                    disabled={statusSimpan.jenis === "proses" || statusSimpan.jenis === "ok"}
+                    className="rounded-full bg-lavender px-5 py-2 text-sm font-semibold transition hover:bg-sun disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-lavender"
+                  >
+                    {statusSimpan.jenis === "ok" ? "✓ Tersimpan" : "Simpan hasil ke riwayat"}
+                  </button>
+                  {statusSimpan.teks && (
+                    <p
+                      role={statusSimpan.jenis === "galat" ? "alert" : "status"}
+                      className={`mt-2 rounded-2xl px-4 py-2 text-xs font-semibold ${
+                        statusSimpan.jenis === "galat" ? "bg-rose/40" : "bg-mint/30"
+                      }`}
+                    >
+                      {statusSimpan.teks}
+                    </p>
+                  )}
+                </>
+              ) : (
+                <p className="text-xs text-ink/60">
+                  <Link href="/login" className="font-semibold text-brand underline underline-offset-2">
+                    Masuk
+                  </Link>{" "}
+                  untuk menyimpan hasil ini ke riwayat hitunganmu.
+                </p>
+              )}
+            </div>
           )}
         </section>
       </div>
@@ -743,5 +914,14 @@ export default function Kalkulator() {
         Kalkulator bisa dipakai tanpa login. Login hanya untuk menyimpan riwayat hitungan.
       </p>
     </div>
+  );
+}
+
+// useSearchParams harus dibungkus Suspense
+export default function Kalkulator() {
+  return (
+    <Suspense fallback={null}>
+      <IsiKalkulator />
+    </Suspense>
   );
 }
