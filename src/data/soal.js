@@ -664,6 +664,101 @@ export const bankSoal = [
     benar: 1,
     pembahasan: t`Sampel yang lebih besar mengurangi ketidakpastian sehingga uji lebih mampu mendeteksi efek nyata. Menurunkan $\alpha$ justru menurunkan power.`,
   },
+
+  
+  // ===== Distribusi Normal dan Skor Z =====
+  {
+    id: "dn-001",
+    slug: "distribusi-normal",
+    pertanyaan: t`Nilai $x = 65$ berasal dari distribusi normal dengan $\mu = 50$ dan $\sigma = 5$. Berapa skor Z-nya?`,
+    pilihan: [t`$-3$`, t`$0{,}3$`, t`$3$`, t`$15$`],
+    benar: 2,
+    pembahasan: t`$Z = \dfrac{x - \mu}{\sigma} = \dfrac{65 - 50}{5} = 3$.`,
+  },
+  {
+    id: "dn-002",
+    slug: "distribusi-normal",
+    pertanyaan: t`Menurut aturan empiris, sekitar berapa persen data berada dalam $2\sigma$ dari mean?`,
+    pilihan: [t`$68\%$`, t`$90\%$`, t`$95\%$`, t`$99{,}7\%$`],
+    benar: 2,
+    pembahasan: t`Dalam $1\sigma$ sekitar $68\%$, dalam $2\sigma$ sekitar $95\%$, dan dalam $3\sigma$ sekitar $99{,}7\%$.`,
+  },
+  {
+    id: "dn-003",
+    slug: "distribusi-normal",
+    pertanyaan: t`Distribusi normal baku (distribusi Z) memiliki ...`,
+    pilihan: [
+      t`Mean $1$ dan simpangan baku $0$`,
+      t`Mean $0$ dan simpangan baku $1$`,
+      t`Mean $0$ dan simpangan baku $0$`,
+      t`Mean $1$ dan simpangan baku $1$`,
+    ],
+    benar: 1,
+    pembahasan: t`Distribusi normal baku punya mean $0$ dan simpangan baku $1$. Nilai $x$ diubah ke skor Z agar bisa memakai satu tabel yang sama.`,
+  },
+  {
+    id: "dn-004",
+    slug: "distribusi-normal",
+    pertanyaan: t`Tinggi badan berdistribusi normal dengan $\mu = 100$ dan $\sigma = 15$. Skor Z untuk $x = 85$ adalah ...`,
+    pilihan: [t`$-15$`, t`$1$`, t`$0$`, t`$-1$`],
+    benar: 3,
+    pembahasan: t`$Z = \dfrac{85 - 100}{15} = -1$. Tanda negatif berarti nilai berada di bawah mean.`,
+  },
+  {
+    id: "dn-005",
+    slug: "distribusi-normal",
+    pertanyaan: t`Pada distribusi normal baku, berapa nilai $P(Z < 0)$?`,
+    pilihan: [t`$0$`, t`$0{,}25$`, t`$0{,}5$`, t`$1$`],
+    benar: 2,
+    pembahasan: t`Kurva simetris di sekitar $0$, sehingga tepat separuh luasnya berada di sebelah kiri $0$. Maka $P(Z < 0) = 0{,}5$.`,
+  },
+
+  // ===== Uji t =====
+  {
+    id: "ut-001",
+    slug: "uji-t",
+    pertanyaan: t`Nilai $20$ siswa diukur sebelum dan sesudah mengikuti pelatihan. Uji yang paling tepat adalah ...`,
+    pilihan: [
+      t`Uji t satu sampel`,
+      t`Uji t sampel bebas`,
+      t`Uji t berpasangan`,
+      t`Uji korelasi`,
+    ],
+    benar: 2,
+    pembahasan: t`Dua pengukuran berasal dari subjek yang sama, sehingga datanya berpasangan. Gunakan uji t berpasangan.`,
+  },
+  {
+    id: "ut-002",
+    slug: "uji-t",
+    pertanyaan: t`Uji t sampel bebas membandingkan kelompok berukuran $n_1 = 12$ dan $n_2 = 15$. Berapa derajat bebasnya (varians dianggap sama)?`,
+    pilihan: [t`$25$`, t`$26$`, t`$27$`, t`$13{,}5$`],
+    benar: 0,
+    pembahasan: t`$db = n_1 + n_2 - 2 = 12 + 15 - 2 = 25$.`,
+  },
+  {
+    id: "ut-003",
+    slug: "uji-t",
+    pertanyaan: t`Pada uji t satu sampel dengan $n = 20$, derajat bebasnya adalah ...`,
+    pilihan: [t`$18$`, t`$19$`, t`$20$`, t`$21$`],
+    benar: 1,
+    pembahasan: t`$db = n - 1 = 20 - 1 = 19$.`,
+  },
+  {
+    id: "ut-004",
+    slug: "uji-t",
+    pertanyaan: t`Sampel $n = 25$ memiliki $\bar{x} = 105$ dan $s = 10$. Untuk $H_0: \mu = 100$, berapa statistik uji $t$?`,
+    pilihan: [t`$0{,}5$`, t`$2$`, t`$2{,}5$`, t`$5$`],
+    benar: 2,
+    pembahasan: t`Galat baku $= \dfrac{10}{\sqrt{25}} = 2$. Maka $t = \dfrac{105 - 100}{2} = 2{,}5$.`,
+  },
+  {
+    id: "ut-005",
+    slug: "uji-t",
+    pertanyaan: t`Pada uji t berpasangan, $n = 16$ pasangan, $\bar{d} = 4$ dan $s_d = 2$. Berapa nilai $t$?`,
+    pilihan: [t`$2$`, t`$4$`, t`$8$`, t`$16$`],
+    benar: 2,
+    pembahasan: t`Galat baku $= \dfrac{2}{\sqrt{16}} = 0{,}5$. Maka $t = \dfrac{4}{0{,}5} = 8$, dengan $db = 15$.`,
+  },
 ];
 
 // Peringatan otomatis (hanya saat pengembangan): slug soal yang tidak cocok dengan materi manapun.

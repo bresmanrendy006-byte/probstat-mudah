@@ -96,4 +96,118 @@ export const materiInferensial = [
       },
     ],
   },
+
+  
+  {
+    slug: "distribusi-normal",
+    judul: "Distribusi normal dan skor Z",
+    kategori: "Statistika Inferensial",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`Distribusi normal berbentuk lonceng yang simetris di sekitar mean ($\mu$). Lebar lonceng ditentukan oleh simpangan baku ($\sigma$): makin besar $\sigma$, makin lebar dan pendek loncengnya. Luas total di bawah kurva sama dengan $1$, sehingga luas daerah tertentu dapat dibaca sebagai peluang.`,
+      t`Skor Z mengubah nilai $x$ menjadi "berapa simpangan baku jaraknya dari mean". Setelah diubah, data mengikuti distribusi normal baku dengan mean $0$ dan simpangan baku $1$, sehingga peluangnya bisa dicari dari satu tabel yang sama.`,
+      t`Aturan empiris: sekitar $68\%$ data berada dalam $1\sigma$ dari mean, sekitar $95\%$ dalam $2\sigma$, dan sekitar $99{,}7\%$ dalam $3\sigma$.`,
+    ],
+    rumus: [
+      {
+        nama: "Skor Z",
+        tex: t`Z = \dfrac{x - \mu}{\sigma}`,
+        ket: t`Bernilai positif bila $x$ di atas mean, negatif bila di bawah mean.`,
+      },
+      {
+        nama: "Aturan empiris",
+        tex: t`P(\mu - k\sigma < X < \mu + k\sigma) \approx 0{,}68;\ 0{,}95;\ 0{,}997`,
+        ket: t`Untuk $k = 1, 2, 3$ berturut-turut.`,
+      },
+    ],
+    contoh: [
+      {
+        soal: "Nilai ujian berdistribusi normal dengan mean 70 dan simpangan baku 10. Berapa skor Z untuk nilai 85?",
+        diketahui: [t`$\mu = 70$ dan $\sigma = 10$`, t`$x = 85$`],
+        ditanya: t`Skor $Z$`,
+        rumus: t`$Z = \dfrac{x - \mu}{\sigma}$`,
+        langkah: [
+          t`Masukkan angka: $Z = \dfrac{85 - 70}{10}$`,
+          t`Hitung: $Z = \dfrac{15}{10} = 1{,}5$`,
+        ],
+        jawaban: t`$Z = 1{,}5$, artinya nilai $85$ berada $1{,}5$ simpangan baku di atas mean.`,
+      },
+      {
+        soal: "Dengan data yang sama (mean 70, simpangan baku 10), berapa peluang seorang siswa bernilai antara 60 dan 80? Diketahui P(Z < 1) = 0,8413.",
+        diketahui: [
+          t`$\mu = 70$, $\sigma = 10$`,
+          t`Batas: $60$ dan $80$`,
+          t`$P(Z < 1) = 0{,}8413$`,
+        ],
+        ditanya: t`$P(60 < X < 80)$`,
+        langkah: [
+          t`Ubah batas ke skor Z: $Z_1 = \dfrac{60-70}{10} = -1$ dan $Z_2 = \dfrac{80-70}{10} = 1$`,
+          t`Kurva simetris, sehingga $P(Z < -1) = 1 - 0{,}8413 = 0{,}1587$`,
+          t`Peluang di antaranya: $P(-1 < Z < 1) = 0{,}8413 - 0{,}1587 = 0{,}6826$`,
+        ],
+        jawaban: t`Peluangnya sekitar $0{,}68$ atau $68\%$, sesuai aturan empiris.`,
+      },
+    ],
+  },
+
+  {
+    slug: "uji-t",
+    judul: "Uji t",
+    kategori: "Statistika Inferensial",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`Uji t dipakai untuk membandingkan rata-rata ketika simpangan baku populasi tidak diketahui, terutama pada sampel kecil. Distribusi t mirip distribusi normal tetapi lebih "gemuk" di ekor, dan makin mirip normal bila derajat bebas ($db$) makin besar.`,
+      t`Ada tiga jenis. Uji t satu sampel membandingkan rata-rata sampel dengan nilai tertentu. Uji t sampel bebas membandingkan rata-rata dua kelompok yang berbeda orangnya. Uji t berpasangan membandingkan dua pengukuran pada subjek yang sama, misalnya sebelum dan sesudah perlakuan.`,
+      t`Uji t berpasangan sebenarnya adalah uji t satu sampel pada selisih tiap pasangan. Keputusannya sama seperti uji hipotesis: tolak $H_0$ bila p-value $\le \alpha$, atau bila $|t|$ melebihi nilai kritis.`,
+    ],
+    rumus: [
+      {
+        nama: "Uji t satu sampel",
+        tex: t`t = \dfrac{\bar{x} - \mu_0}{s / \sqrt{n}}`,
+        ket: t`$db = n - 1$.`,
+      },
+      {
+        nama: "Uji t sampel bebas (varians dianggap sama)",
+        tex: t`t = \dfrac{\bar{x}_1 - \bar{x}_2}{s_p \sqrt{\dfrac{1}{n_1} + \dfrac{1}{n_2}}}`,
+        ket: t`$db = n_1 + n_2 - 2$, dengan $s_p^2 = \dfrac{(n_1-1)s_1^2 + (n_2-1)s_2^2}{n_1 + n_2 - 2}$.`,
+      },
+      {
+        nama: "Uji t berpasangan",
+        tex: t`t = \dfrac{\bar{d}}{s_d / \sqrt{n}}`,
+        ket: t`$\bar{d}$ dan $s_d$ adalah mean dan simpangan baku selisih tiap pasangan. $db = n - 1$.`,
+      },
+    ],
+    contoh: [
+      {
+        soal: "Lima siswa mengikuti tes sebelum dan sesudah les. Selisih nilainya (sesudah - sebelum): 3, 5, 2, 4, 6. Ujilah pada alpha 0,05 (dua arah) apakah les berpengaruh. Nilai kritis t dengan db = 4 adalah 2,776.",
+        diketahui: [t`Selisih $d$: $3, 5, 2, 4, 6$ dengan $n = 5$`, t`$\alpha = 0{,}05$, nilai kritis $\pm 2{,}776$`],
+        ditanya: "Keputusan uji t berpasangan",
+        rumus: t`$t = \dfrac{\bar{d}}{s_d / \sqrt{n}}$`,
+        langkah: [
+          t`Hipotesis: $H_0: \mu_d = 0$ dan $H_1: \mu_d \neq 0$`,
+          t`Mean selisih: $\bar{d} = \dfrac{20}{5} = 4$`,
+          t`Kuadrat selisih terhadap mean: $1, 1, 4, 0, 4$ dengan jumlah $10$, sehingga $s_d^2 = \dfrac{10}{4} = 2{,}5$ dan $s_d \approx 1{,}581$`,
+          t`Galat baku: $\dfrac{1{,}581}{\sqrt{5}} \approx 0{,}707$`,
+          t`Statistik uji: $t = \dfrac{4}{0{,}707} \approx 5{,}66$`,
+          t`Bandingkan: $5{,}66 > 2{,}776$, jadi $t$ masuk daerah penolakan`,
+        ],
+        jawaban: t`Tolak $H_0$. Ada bukti bahwa les berpengaruh terhadap nilai.`,
+      },
+      {
+        soal: "Kelas A (n = 10) punya rata-rata 78 dan kelas B (n = 10) rata-rata 72. Simpangan baku kedua kelas sama, yaitu 6. Ujilah pada alpha 0,05 (dua arah) apakah rata-rata kedua kelas berbeda. Nilai kritis t dengan db = 18 adalah 2,101.",
+        diketahui: [t`$\bar{x}_1 = 78$, $\bar{x}_2 = 72$, $n_1 = n_2 = 10$`, t`$s_1 = s_2 = 6$, sehingga $s_p = 6$`, t`$db = 18$, nilai kritis $\pm 2{,}101$`],
+        ditanya: "Keputusan uji t sampel bebas",
+        rumus: t`$t = \dfrac{\bar{x}_1 - \bar{x}_2}{s_p \sqrt{\frac{1}{n_1} + \frac{1}{n_2}}}$`,
+        langkah: [
+          t`Hipotesis: $H_0: \mu_1 = \mu_2$ dan $H_1: \mu_1 \neq \mu_2$`,
+          t`Galat baku: $6 \sqrt{\dfrac{1}{10} + \dfrac{1}{10}} = 6 \times 0{,}4472 \approx 2{,}683$`,
+          t`Statistik uji: $t = \dfrac{78 - 72}{2{,}683} \approx 2{,}24$`,
+          t`Bandingkan: $2{,}24 > 2{,}101$, jadi $t$ masuk daerah penolakan`,
+        ],
+        jawaban: t`Tolak $H_0$. Ada bukti bahwa rata-rata kedua kelas berbeda.`,
+      },
+    ],
+  },
 ];

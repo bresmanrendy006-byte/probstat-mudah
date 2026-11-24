@@ -31,7 +31,12 @@ const susunan = [
   },
   {
     kategori: "Statistika Inferensial",
-    materi: ["dasar-uji-hipotesis", "kesalahan-tipe-i-ii-power"],
+    materi: [
+      "dasar-uji-hipotesis",
+      "kesalahan-tipe-i-ii-power",
+      "distribusi-normal",
+      "uji-t",
+    ],
   },
 ];
 
