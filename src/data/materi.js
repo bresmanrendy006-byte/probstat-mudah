@@ -5,6 +5,7 @@
 
 import { materiProbabilitas } from "./materiProbabilitas";
 import { materiStatistika } from "./materiStatistika";
+import { materiInferensial } from "./materiInferensial";
 
 const t = String.raw;
 
@@ -67,8 +68,7 @@ const peluangSuatuKejadian = {
   ],
 };
 
-export const daftarMateri = [peluangSuatuKejadian, ...materiProbabilitas, ...materiStatistika];
-
+export const daftarMateri = [peluangSuatuKejadian, ...materiProbabilitas, ...materiStatistika, ...materiInferensial];
 export function cariMateri(slug) {
   return daftarMateri.find((m) => m.slug === slug);
 }

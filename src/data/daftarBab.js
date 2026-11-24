@@ -29,6 +29,10 @@ const susunan = [
       "input-data-spss",
     ],
   },
+  {
+    kategori: "Statistika Inferensial",
+    materi: ["dasar-uji-hipotesis", "kesalahan-tipe-i-ii-power"],
+  },
 ];
 
 export function ambilDaftar() {

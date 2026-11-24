@@ -23,8 +23,8 @@ export const bagianVideo = [
     video: [
       { judul: "Peluang Bersyarat", id: "", slug: "peluang-bersyarat" },
       { judul: "Teorema Bayes", id: "gnjYXzCeOQE", slug: "teorema-bayes" },
-      { judul: "Dasar Uji Hipotesis", id: "_BaflviQadY" },
-      { judul: "Kesalahan Tipe I, II, dan Power", id: "LZ07umhEuqk" },
+      { judul: "Dasar Uji Hipotesis", id: "_BaflviQadY", slug: "dasar-uji-hipotesis" },
+      { judul: "Kesalahan Tipe I, II, dan Power", id: "LZ07umhEuqk", slug: "kesalahan-tipe-i-ii-power" },
       { judul: "Memilih Uji yang Tepat", id: "" },
     ],
   },

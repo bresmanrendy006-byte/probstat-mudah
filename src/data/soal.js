@@ -540,6 +540,130 @@ export const bankSoal = [
     benar: 1,
     pembahasan: t`Nama variabel di SPSS tidak boleh mengandung spasi dan tidak boleh diawali angka. Gunakan garis bawah (misalnya \`nilai_ujian\`) bila perlu memisahkan kata.`,
   },
+  
+  // ===== Dasar Uji Hipotesis =====
+  {
+    id: "duh-001",
+    slug: "dasar-uji-hipotesis",
+    pertanyaan: t`Hipotesis nol ($H_0$) pada umumnya berisi pernyataan ...`,
+    pilihan: [
+      t`Yang ingin dibuktikan peneliti`,
+      t`Tidak ada perbedaan atau tidak ada efek`,
+      t`Selalu bernilai salah`,
+      t`Hasil yang pasti terjadi`,
+    ],
+    benar: 1,
+    pembahasan: t`$H_0$ menyatakan keadaan "tidak ada perbedaan atau efek". Yang ingin dibuktikan peneliti biasanya dinyatakan sebagai $H_1$.`,
+  },
+  {
+    id: "duh-002",
+    slug: "dasar-uji-hipotesis",
+    pertanyaan: t`Suatu uji menghasilkan p-value $= 0{,}02$ dengan $\alpha = 0{,}05$. Keputusannya adalah ...`,
+    pilihan: [
+      t`Tolak $H_0$`,
+      t`Gagal menolak $H_0$`,
+      t`Terima $H_1$ dengan pasti`,
+      t`Uji harus diulang`,
+    ],
+    benar: 0,
+    pembahasan: t`Karena $0{,}02 \le 0{,}05$, kita menolak $H_0$. Bukti cukup kuat pada taraf $5\%$.`,
+  },
+  {
+    id: "duh-003",
+    slug: "dasar-uji-hipotesis",
+    pertanyaan: t`P-value adalah peluang ...`,
+    pilihan: [
+      t`$H_0$ benar`,
+      t`$H_1$ benar`,
+      t`Memperoleh hasil sampel sedekat atau lebih ekstrem dari yang diamati, bila $H_0$ benar`,
+      t`Membuat kesalahan Tipe II`,
+    ],
+    benar: 2,
+    pembahasan: t`P-value dihitung dengan anggapan $H_0$ benar. Ia bukan peluang bahwa $H_0$ benar.`,
+  },
+  {
+    id: "duh-004",
+    slug: "dasar-uji-hipotesis",
+    pertanyaan: t`Jika p-value $> \alpha$, kesimpulan yang tepat adalah ...`,
+    pilihan: [
+      t`$H_0$ terbukti benar`,
+      t`$H_1$ terbukti benar`,
+      t`Sampel yang dipakai salah`,
+      t`Bukti belum cukup untuk menolak $H_0$`,
+    ],
+    benar: 3,
+    pembahasan: t`Gagal menolak $H_0$ hanya berarti bukti belum cukup. Itu tidak membuktikan bahwa $H_0$ benar.`,
+  },
+  {
+    id: "duh-005",
+    slug: "dasar-uji-hipotesis",
+    pertanyaan: t`Sampel $n = 16$ memiliki $\bar{x} = 54$ dan $s = 8$. Untuk $H_0: \mu = 50$, berapa statistik uji $t$?`,
+    pilihan: [t`$0{,}5$`, t`$2$`, t`$4$`, t`$8$`],
+    benar: 1,
+    pembahasan: t`Galat baku $= \dfrac{8}{\sqrt{16}} = 2$. Maka $t = \dfrac{54 - 50}{2} = 2$, dengan $db = 15$.`,
+  },
+
+  // ===== Kesalahan Tipe I, Tipe II, dan Power =====
+  {
+    id: "kt-001",
+    slug: "kesalahan-tipe-i-ii-power",
+    pertanyaan: t`Kesalahan Tipe I terjadi bila kita ...`,
+    pilihan: [
+      t`Menolak $H_0$ padahal $H_0$ benar`,
+      t`Menolak $H_0$ padahal $H_0$ salah`,
+      t`Gagal menolak $H_0$ padahal $H_0$ salah`,
+      t`Gagal menolak $H_0$ padahal $H_0$ benar`,
+    ],
+    benar: 0,
+    pembahasan: t`Tipe I adalah menolak $H_0$ yang sebenarnya benar (alarm palsu). Peluangnya adalah $\alpha$.`,
+  },
+  {
+    id: "kt-002",
+    slug: "kesalahan-tipe-i-ii-power",
+    pertanyaan: t`Kesalahan Tipe II terjadi bila kita ...`,
+    pilihan: [
+      t`Menolak $H_0$ yang benar`,
+      t`Menolak $H_0$ yang salah`,
+      t`Gagal menolak $H_0$ yang salah`,
+      t`Gagal menolak $H_0$ yang benar`,
+    ],
+    benar: 2,
+    pembahasan: t`Tipe II adalah gagal mendeteksi efek yang sebenarnya ada. Peluangnya adalah $\beta$.`,
+  },
+  {
+    id: "kt-003",
+    slug: "kesalahan-tipe-i-ii-power",
+    pertanyaan: t`Memakai $\alpha = 0{,}05$ berarti ...`,
+    pilihan: [
+      t`Peluang $H_0$ benar adalah $5\%$`,
+      t`Power uji adalah $95\%$`,
+      t`Peluang kesalahan Tipe II adalah $5\%$`,
+      t`Peluang kesalahan Tipe I paling besar $5\%$`,
+    ],
+    benar: 3,
+    pembahasan: t`$\alpha$ adalah peluang menolak $H_0$ yang benar, yaitu kesalahan Tipe I. Nilainya tidak otomatis menentukan $\beta$ atau power.`,
+  },
+  {
+    id: "kt-004",
+    slug: "kesalahan-tipe-i-ii-power",
+    pertanyaan: t`Suatu uji memiliki $\beta = 0{,}15$. Berapa powernya?`,
+    pilihan: [t`$0{,}15$`, t`$0{,}85$`, t`$0{,}95$`, t`$1{,}15$`],
+    benar: 1,
+    pembahasan: t`$\text{Power} = 1 - \beta = 1 - 0{,}15 = 0{,}85$.`,
+  },
+  {
+    id: "kt-005",
+    slug: "kesalahan-tipe-i-ii-power",
+    pertanyaan: t`Bila $\alpha$ tetap, cara yang menaikkan power uji adalah ...`,
+    pilihan: [
+      t`Memperkecil ukuran sampel`,
+      t`Memperbesar ukuran sampel`,
+      t`Memperkecil efek yang diuji`,
+      t`Menurunkan $\alpha$ menjadi lebih kecil`,
+    ],
+    benar: 1,
+    pembahasan: t`Sampel yang lebih besar mengurangi ketidakpastian sehingga uji lebih mampu mendeteksi efek nyata. Menurunkan $\alpha$ justru menurunkan power.`,
+  },
 ];
 
 // Peringatan otomatis (hanya saat pengembangan): slug soal yang tidak cocok dengan materi manapun.
