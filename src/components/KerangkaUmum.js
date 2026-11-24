@@ -14,6 +14,7 @@ const tautanFooter = [
   { href: "/", nama: "Beranda" },
   { href: "/materi", nama: "Materi" },
   { href: "/bank-soal", nama: "Bank Soal" },
+  { href: "/glosarium", nama: "Glosarium" },
   { href: "/video", nama: "Video" },
   { href: "/kalkulator", nama: "Kalkulator" },
 ];
