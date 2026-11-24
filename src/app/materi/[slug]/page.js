@@ -20,6 +20,24 @@ export async function generateMetadata({ params }) {
 const warnaTingkat = { SMA: "bg-mint/40", Mahasiswa: "bg-lavender" };
 const KARTU = "rounded-3xl border border-brand/10 bg-white shadow-hard";
 
+
+// Materi -> tab kalkulator terkait (kode mengikuti kodeMode di kalkulator/page.js)
+const kalkulatorTerkait = {
+  "peluang-suatu-kejadian": { kode: "peluang", nama: "Peluang" },
+  "aturan-penjumlahan": { kode: "peluang", nama: "Peluang" },
+  "aturan-perkalian": { kode: "peluang", nama: "Peluang" },
+  "peluang-bersyarat": { kode: "peluang", nama: "Peluang" },
+  "ukuran-pemusatan": { kode: "statistika", nama: "Statistika" },
+  "ukuran-penyebaran": { kode: "statistika", nama: "Statistika" },
+  "distribusi-normal": { kode: "normal", nama: "Normal" },
+  "dasar-uji-hipotesis": { kode: "uji-t", nama: "Uji t" },
+  "uji-t": { kode: "uji-t", nama: "Uji t" },
+  "korelasi-dan-regresi": { kode: "korelasi", nama: "Korelasi" },
+  "spss-korelasi-regresi": { kode: "korelasi", nama: "Korelasi" },
+  "anova-satu-arah": { kode: "anova", nama: "ANOVA" },
+  "spss-uji-beda-rata-rata": { kode: "anova", nama: "ANOVA" },
+};
+
 // Judul bagian dengan ikon pastel kecil di depannya.
 function JudulBagian({ ikon, warna, children }) {
   return (
@@ -41,6 +59,7 @@ export default async function IsiMateri({ params }) {
   if (!m) notFound();
 
   const soal = ambilSoal(slug);
+  const kalk = kalkulatorTerkait[slug] ?? null;
 
   // Materi sebelum dan sesudah (hanya yang sudah ada isinya)
   const urut = ambilDaftar().flatMap((k) => k.materi).filter((x) => x.isi);
@@ -235,10 +254,10 @@ export default async function IsiMateri({ params }) {
             Kalkulator menunjukkan langkah penyelesaiannya satu per satu.
           </p>
           <Link
-            href="/kalkulator"
+            href={kalk ? `/kalkulator?mode=${kalk.kode}` : "/kalkulator"}
             className="mt-4 inline-block rounded-full bg-sun px-6 py-2.5 font-semibold text-ink shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"
           >
-            Buka Kalkulator
+            {kalk ? `Coba di Kalkulator: ${kalk.nama}` : "Buka Kalkulator"}
           </Link>
         </div>
       </div>

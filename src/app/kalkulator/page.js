@@ -92,6 +92,19 @@ const mode = [
   },
 ];
 
+// Kode untuk alamat /kalkulator?mode=KODE. Urutannya HARUS sama dengan array `mode` di atas.
+const kodeMode = [
+  "dasar",
+  "peluang",
+  "statistika",
+  "binomial",
+  "poisson",
+  "normal",
+  "uji-t",
+  "korelasi",
+  "anova",
+];
+
 // Pengaturan khusus mode Uji t
 const jenisUji = [
   { kode: "satu", nama: "Satu sampel", labelA: "Data sampel", labelB: "" },
@@ -186,7 +199,8 @@ function IsiKalkulator() {
   const params = useSearchParams();
   const riwayatId = /^\d+$/.test(params.get("riwayat") ?? "") ? Number(params.get("riwayat")) : null;
 
-  const [aktif, setAktif] = useState(2);
+  const indeksAwal = kodeMode.indexOf(params.get("mode") ?? "");
+  const [aktif, setAktif] = useState(indeksAwal >= 0 ? indeksAwal : 2);
   const [teks, setTeks] = useState("");
   const [hasil, setHasil] = useState(null);
   const [versi, setVersi] = useState(0); // naik tiap kali menghitung, supaya animasi diputar ulang
