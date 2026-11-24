@@ -4,9 +4,11 @@
 // Halaman Video: filter per bagian. Kartu dengan ID YouTube bisa diputar di tempat (klik gambar
 // sampulnya); kartu tanpa ID tampil "Segera hadir". Datanya ada di src/data/video.js.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { bagianVideo } from "@/data/video";
+import { createClient } from "@/lib/supabase/client";
+import TombolSelesaiVideo from "@/components/TombolSelesaiVideo";
 
 function IkonPutar() {
   return (
@@ -33,7 +35,7 @@ function IkonJam() {
   );
 }
 
-function KartuVideo({ v, nomor, warna, sedangDiputar, putar }) {
+function KartuVideo({ v, nomor, warna, sedangDiputar, putar, bisaTandai, selesai, sibuk, tandai }) {
   const ada = Boolean(v.id);
 
   return (
@@ -101,6 +103,11 @@ function KartuVideo({ v, nomor, warna, sedangDiputar, putar }) {
           Baca materinya →
         </Link>
       )}
+      {v.slug && ada && bisaTandai && (
+        <div>
+          <TombolSelesaiVideo selesai={selesai} sibuk={sibuk} onKlik={tandai} />
+        </div>
+      )}
     </article>
   );
 }
@@ -108,6 +115,65 @@ function KartuVideo({ v, nomor, warna, sedangDiputar, putar }) {
 export default function Video() {
   const [aktif, setAktif] = useState(null); // null = semua bagian
   const [diputar, setDiputar] = useState(null); // "indeksBagian-indeksVideo"
+
+  // Progres: userId undefined = memeriksa, null = belum login
+  const [userId, setUserId] = useState(undefined);
+  const [selesai, setSelesai] = useState(new Set());
+  const [sibuk, setSibuk] = useState(null); // slug yang sedang disimpan
+  const [galat, setGalat] = useState("");
+
+  useEffect(() => {
+    let batal = false;
+    (async () => {
+      try {
+        const supabase = createClient();
+        const { data } = await supabase.auth.getClaims();
+        const id = data?.claims?.sub ?? null;
+        if (batal) return;
+        setUserId(id);
+        if (!id) return;
+        const { data: baris, error } = await supabase
+          .from("progres")
+          .select("slug")
+          .eq("user_id", id);
+        if (error) throw error;
+        if (!batal) setSelesai(new Set((baris ?? []).map((b) => b.slug)));
+      } catch (err) {
+        console.error("Gagal membaca progres:", err);
+        if (!batal) setUserId(null);
+      }
+    })();
+    return () => {
+      batal = true;
+    };
+  }, []);
+
+  async function ubahSelesai(slug) {
+    if (!userId || sibuk) return;
+    const sudah = selesai.has(slug);
+    setSibuk(slug);
+    setGalat("");
+    try {
+      const supabase = createClient();
+      const { error } = sudah
+        ? await supabase.from("progres").delete().eq("user_id", userId).eq("slug", slug)
+        : await supabase
+            .from("progres")
+            .upsert({ user_id: userId, slug }, { onConflict: "user_id,slug", ignoreDuplicates: true });
+      if (error) throw error;
+      setSelesai((lama) => {
+        const baru = new Set(lama);
+        if (sudah) baru.delete(slug);
+        else baru.add(slug);
+        return baru;
+      });
+    } catch (err) {
+      console.error("Gagal menyimpan progres:", err);
+      setGalat("Gagal menyimpan. Coba lagi sebentar lagi.");
+    } finally {
+      setSibuk(null);
+    }
+  }
 
   const total = bagianVideo.reduce((a, b) => a + b.video.length, 0);
   const tersedia = bagianVideo.reduce((a, b) => a + b.video.filter((v) => v.id).length, 0);
@@ -120,6 +186,20 @@ export default function Video() {
         <span className="font-semibold text-brand">{tersedia} sudah tersedia</span>, sisanya segera
         hadir.
       </p>
+
+      {userId === null && (
+        <p className="mt-3 rounded-2xl bg-lavender/60 p-3 text-sm">
+          <Link href="/login" className="font-bold text-brand underline">
+            Masuk
+          </Link>{" "}
+          untuk menandai materi selesai langsung dari halaman ini.
+        </p>
+      )}
+      {galat && (
+        <p role="alert" className="mt-3 rounded-2xl bg-rose/40 p-3 text-sm font-semibold">
+          {galat}
+        </p>
+      )}
 
       <div role="group" aria-label="Filter bagian" className="mt-6 flex flex-wrap gap-2">
         <button
@@ -178,6 +258,10 @@ export default function Video() {
                       warna={b.warna}
                       sedangDiputar={diputar === kunci}
                       putar={() => setDiputar(kunci)}
+                      bisaTandai={Boolean(userId)}
+                      selesai={selesai.has(v.slug)}
+                      sibuk={sibuk === v.slug}
+                      tandai={() => ubahSelesai(v.slug)}
                     />
                   );
                 })}
