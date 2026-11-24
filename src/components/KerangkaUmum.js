@@ -13,6 +13,7 @@ import ProgresScroll from "@/components/ProgresScroll";
 const tautanFooter = [
   { href: "/", nama: "Beranda" },
   { href: "/materi", nama: "Materi" },
+  { href: "/bank-soal", nama: "Bank Soal" },
   { href: "/video", nama: "Video" },
   { href: "/kalkulator", nama: "Kalkulator" },
 ];
