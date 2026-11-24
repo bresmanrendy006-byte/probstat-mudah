@@ -38,6 +38,8 @@ const susunan = [
       "uji-t",
       "korelasi-dan-regresi",
       "anova-satu-arah",
+      "spss-uji-beda-rata-rata",
+      "spss-korelasi-regresi",
     ],
   },
 ];

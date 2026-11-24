@@ -330,4 +330,111 @@ export const materiInferensial = [
       },
     ],
   },
+
+  
+  {
+    slug: "spss-uji-beda-rata-rata",
+    judul: "SPSS: uji beda rata-rata (Means, uji t, ANOVA)",
+    kategori: "Statistika Inferensial",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`Semua uji beda rata-rata di SPSS ada di menu Analyze, lalu Compare Means (nama menunya bisa sedikit berbeda di versi terbaru). Pilih menu sesuai pertanyaanmu. Means menampilkan rata-rata per kelompok tanpa uji. One-Sample T Test membandingkan satu kelompok dengan nilai tertentu. Independent-Samples T Test membandingkan dua kelompok yang orangnya berbeda. Paired-Samples T Test membandingkan dua pengukuran pada subjek yang sama. One-Way ANOVA membandingkan tiga kelompok atau lebih.`,
+      t`Cara membaca output hampir selalu sama: cari kolom Sig. (itu p-value). Pada uji t, pakai Sig. (2-tailed). Bila Sig. $\le 0{,}05$, tolak $H_0$. Bila Sig. $> 0{,}05$, gagal menolak $H_0$.`,
+      t`Untuk Independent-Samples T Test, data disusun dalam satu kolom nilai dan satu kolom kode kelompok (misalnya $1$ dan $2$). Kolom kode dimasukkan ke Grouping Variable, lalu klik Define Groups dan isi kodenya. Output memuat Levene's Test: bila Sig. Levene $> 0{,}05$, baca baris Equal variances assumed. Bila Sig. Levene $\le 0{,}05$, baca baris Equal variances not assumed.`,
+      t`Untuk Paired-Samples T Test, siapkan dua kolom (misalnya Sebelum dan Sesudah), satu baris untuk satu subjek. Untuk One-Way ANOVA, masukkan variabel numerik ke Dependent List dan variabel kelompok ke Factor. Di Options, centang Descriptive dan Homogeneity of variance test. Bila ANOVA signifikan, buka Post Hoc dan pilih Tukey untuk melihat pasangan kelompok yang berbeda di tabel Multiple Comparisons.`,
+    ],
+    rumus: [
+      {
+        nama: "Aturan keputusan dari output SPSS",
+        tex: t`\text{Sig.} \le \alpha \;\Rightarrow\; \text{tolak } H_0`,
+        ket: t`Umumnya $\alpha = 0{,}05$. Kolom Sig. di SPSS adalah p-value.`,
+      },
+    ],
+    contoh: [
+      {
+        soal: "Output Independent-Samples T Test menunjukkan Sig. Levene's Test = 0,412, sedangkan baris Equal variances assumed memiliki Sig. (2-tailed) = 0,018. Apa keputusannya pada alpha 0,05?",
+        diketahui: [
+          t`Sig. Levene $= 0{,}412$`,
+          t`Sig. (2-tailed) pada baris Equal variances assumed $= 0{,}018$`,
+          t`$\alpha = 0{,}05$`,
+        ],
+        ditanya: "Baris mana yang dibaca, dan keputusan uji",
+        langkah: [
+          t`Periksa Levene: $0{,}412 > 0{,}05$, jadi varians kedua kelompok dianggap sama`,
+          "Karena itu baca baris Equal variances assumed.",
+          t`Bandingkan Sig. (2-tailed) dengan alpha: $0{,}018 \le 0{,}05$`,
+        ],
+        jawaban: t`Tolak $H_0$. Ada bukti bahwa rata-rata kedua kelompok berbeda.`,
+      },
+      {
+        soal: "Tiga metode belajar (kode 1, 2, 3) dibandingkan pada satu kolom Nilai. Tulis langkah One-Way ANOVA di SPSS. Hasilnya: Sig. pada tabel ANOVA = 0,003. Apa langkah selanjutnya?",
+        diketahui: [
+          "Kolom Nilai (numerik) dan kolom Metode (kode 1, 2, 3)",
+          t`Sig. tabel ANOVA $= 0{,}003$`,
+        ],
+        ditanya: "Langkah di SPSS dan tindak lanjut",
+        langkah: [
+          "Klik Analyze, Compare Means, lalu One-Way ANOVA.",
+          "Pindahkan Nilai ke Dependent List dan Metode ke Factor.",
+          "Klik Options, centang Descriptive dan Homogeneity of variance test, lalu Continue.",
+          "Klik Post Hoc, centang Tukey, lalu Continue dan OK.",
+          t`Baca tabel ANOVA: $0{,}003 \le 0{,}05$, jadi tolak $H_0$`,
+          "Buka tabel Multiple Comparisons untuk melihat pasangan metode mana yang berbeda (Sig. kurang dari atau sama dengan 0,05).",
+        ],
+        jawaban: t`Karena Sig. $\le 0{,}05$, setidaknya satu rata-rata berbeda. Lanjutkan dengan membaca tabel Tukey untuk menentukan pasangan yang berbeda.`,
+      },
+    ],
+  },
+
+  {
+    slug: "spss-korelasi-regresi",
+    judul: "SPSS: korelasi dan regresi linear",
+    kategori: "Statistika Inferensial",
+    tingkat: "Mahasiswa",
+    video: [],
+    pengertian: [
+      t`Untuk korelasi, klik Analyze, Correlate, lalu Bivariate. Pindahkan dua variabel ke kotak Variables, centang Pearson, dan pilih Two-tailed. Output berupa tabel Correlations yang memuat Pearson Correlation (nilai $r$), Sig. (2-tailed), dan N. Bila Sig. $\le 0{,}05$, korelasinya signifikan. Bila datanya ordinal, centang Spearman.`,
+      t`Untuk regresi linear, klik Analyze, Regression, lalu Linear. Isi variabel yang diprediksi ke Dependent dan variabel prediktor ke Independent(s). Output utama ada tiga tabel: Model Summary (R dan R Square), ANOVA (Sig. untuk menguji model), dan Coefficients.`,
+      t`Pada tabel Coefficients, kolom B berisi koefisien: baris Constant adalah $a$ dan baris variabel prediktor adalah $b$, sehingga persamaannya $\hat{y} = a + bx$. Kolom Sig. di tabel itu menguji apakah tiap koefisien berbeda dari nol. R Square adalah $r^2$, yaitu proporsi variasi $y$ yang dijelaskan oleh $x$.`,
+    ],
+    rumus: [
+      {
+        nama: "Persamaan regresi dari kolom B",
+        tex: t`\hat{y} = a + bx`,
+        ket: t`$a$ dari baris Constant, $b$ dari baris variabel prediktor.`,
+      },
+    ],
+    contoh: [
+      {
+        soal: "Data lima siswa (jam belajar dan nilai) dianalisis dengan Analyze, Correlate, Bivariate. Output: Pearson Correlation = 0,775, Sig. (2-tailed) = 0,124, N = 5. Apa kesimpulannya pada alpha 0,05?",
+        diketahui: [
+          t`$r = 0{,}775$ dan $N = 5$`,
+          t`Sig. (2-tailed) $= 0{,}124$`,
+          t`$\alpha = 0{,}05$`,
+        ],
+        ditanya: "Keputusan uji korelasi",
+        langkah: [
+          t`Nilai $r = 0{,}775$ menunjukkan hubungan positif yang kuat di sampel`,
+          t`Bandingkan Sig. dengan alpha: $0{,}124 > 0{,}05$`,
+        ],
+        jawaban: t`Gagal menolak $H_0$. Korelasi belum terbukti signifikan karena sampelnya sangat kecil ($N = 5$), walaupun $r$-nya besar.`,
+      },
+      {
+        soal: "Regresi linear pada data yang sama menghasilkan: R Square = 0,600, Constant (B) = 2,200, dan Jam_belajar (B) = 0,600. Tulis persamaan regresinya dan tafsirkan.",
+        diketahui: [
+          t`R Square $= 0{,}600$`,
+          t`Constant (B) $= 2{,}200$ dan Jam_belajar (B) $= 0{,}600$`,
+        ],
+        ditanya: "Persamaan regresi dan tafsirannya",
+        langkah: [
+          t`Ambil $a = 2{,}200$ dari baris Constant`,
+          t`Ambil $b = 0{,}600$ dari baris Jam_belajar`,
+          t`Susun persamaan: $\hat{y} = 2{,}2 + 0{,}6x$`,
+          t`Tafsir R Square: $0{,}600$ berarti $60\%$ variasi nilai dijelaskan oleh jam belajar`,
+        ],
+        jawaban: t`$\hat{y} = 2{,}2 + 0{,}6x$. Setiap tambahan satu jam belajar menaikkan prediksi nilai rata-rata sebesar $0{,}6$ poin.`,
+      },
+    ],
+  },
 ];

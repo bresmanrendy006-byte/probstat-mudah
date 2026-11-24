@@ -864,6 +864,141 @@ export const bankSoal = [
     benar: 2,
     pembahasan: t`$H_0$ ditolak berarti setidaknya satu rata-rata berbeda. Pasangan mana yang berbeda perlu uji lanjut seperti Tukey.`,
   },
+
+  
+  // ===== SPSS: Uji Beda Rata-Rata =====
+  {
+    id: "su-001",
+    slug: "spss-uji-beda-rata-rata",
+    pertanyaan: t`Untuk membandingkan rata-rata nilai dua kelompok siswa yang berbeda orangnya, menu SPSS yang tepat adalah ...`,
+    pilihan: [
+      t`One-Sample T Test`,
+      t`Paired-Samples T Test`,
+      t`One-Way ANOVA`,
+      t`Independent-Samples T Test`,
+    ],
+    benar: 3,
+    pembahasan: t`Dua kelompok yang berbeda orangnya adalah sampel bebas, sehingga dipakai Independent-Samples T Test.`,
+  },
+  {
+    id: "su-002",
+    slug: "spss-uji-beda-rata-rata",
+    pertanyaan: t`Pada output Independent-Samples T Test, Sig. Levene's Test $= 0{,}03$. Baris yang sebaiknya dibaca adalah ...`,
+    pilihan: [
+      t`Equal variances assumed`,
+      t`Equal variances not assumed`,
+      t`Baris mana pun, hasilnya selalu sama`,
+      t`Tidak ada, uji harus diulang`,
+    ],
+    benar: 1,
+    pembahasan: t`Sig. Levene $0{,}03 \le 0{,}05$ berarti varians kedua kelompok berbeda. Maka baca baris Equal variances not assumed.`,
+  },
+  {
+    id: "su-003",
+    slug: "spss-uji-beda-rata-rata",
+    pertanyaan: t`Output uji t menunjukkan Sig. (2-tailed) $= 0{,}20$. Pada $\alpha = 0{,}05$, keputusannya adalah ...`,
+    pilihan: [
+      t`Tolak $H_0$`,
+      t`Gagal menolak $H_0$`,
+      t`$H_0$ terbukti benar`,
+      t`Gunakan uji lain`,
+    ],
+    benar: 1,
+    pembahasan: t`Karena $0{,}20 > 0{,}05$, kita gagal menolak $H_0$. Itu berarti bukti belum cukup, bukan bukti bahwa $H_0$ benar.`,
+  },
+  {
+    id: "su-004",
+    slug: "spss-uji-beda-rata-rata",
+    pertanyaan: t`Susunan data yang benar untuk Paired-Samples T Test di SPSS adalah ...`,
+    pilihan: [
+      t`Satu kolom nilai dan satu kolom kode kelompok`,
+      t`Dua kolom (misalnya Sebelum dan Sesudah), satu baris untuk satu subjek`,
+      t`Satu baris untuk tiap variabel`,
+      t`Semua nilai dalam satu kolom tanpa kode`,
+    ],
+    benar: 1,
+    pembahasan: t`Pengukuran berpasangan disimpan sebagai dua kolom, dengan satu baris mewakili satu subjek yang diukur dua kali.`,
+  },
+  {
+    id: "su-005",
+    slug: "spss-uji-beda-rata-rata",
+    pertanyaan: t`Tabel ANOVA di SPSS menunjukkan Sig. $< 0{,}05$. Langkah yang tepat berikutnya adalah ...`,
+    pilihan: [
+      t`Menyimpulkan semua kelompok berbeda`,
+      t`Menyimpulkan semua kelompok sama`,
+      t`Membuka Post Hoc (misalnya Tukey) untuk melihat pasangan yang berbeda`,
+      t`Menghapus data pencilan`,
+    ],
+    benar: 2,
+    pembahasan: t`ANOVA yang signifikan hanya menunjukkan ada rata-rata yang berbeda. Uji lanjut seperti Tukey menunjukkan pasangan kelompok mana yang berbeda.`,
+  },
+
+  // ===== SPSS: Korelasi dan Regresi =====
+  {
+    id: "sk-001",
+    slug: "spss-korelasi-regresi",
+    pertanyaan: t`Pada tabel Correlations di SPSS, nilai $r$ dibaca dari baris ...`,
+    pilihan: [
+      t`Pearson Correlation`,
+      t`Sig. (2-tailed)`,
+      t`N`,
+      t`Constant`,
+    ],
+    benar: 0,
+    pembahasan: t`Baris Pearson Correlation memuat koefisien $r$. Sig. (2-tailed) adalah p-value, dan N adalah banyak data.`,
+  },
+  {
+    id: "sk-002",
+    slug: "spss-korelasi-regresi",
+    pertanyaan: t`Output korelasi menunjukkan Sig. (2-tailed) $= 0{,}001$. Pada $\alpha = 0{,}05$, kesimpulannya ...`,
+    pilihan: [
+      t`Korelasi tidak signifikan`,
+      t`Tidak ada hubungan sama sekali`,
+      t`Korelasi signifikan`,
+      t`Data harus dikumpulkan ulang`,
+    ],
+    benar: 2,
+    pembahasan: t`$0{,}001 \le 0{,}05$, jadi $H_0: \rho = 0$ ditolak dan korelasinya signifikan.`,
+  },
+  {
+    id: "sk-003",
+    slug: "spss-korelasi-regresi",
+    pertanyaan: t`Pada tabel Coefficients, Constant (B) $= 5$ dan variabel $x$ (B) $= 2$. Persamaan regresinya adalah ...`,
+    pilihan: [
+      t`$\hat{y} = 2 + 5x$`,
+      t`$\hat{y} = 5 + 2x$`,
+      t`$\hat{y} = 5x + 2$ dengan $x$ selalu bernilai $2$`,
+      t`$\hat{y} = 7x$`,
+    ],
+    benar: 1,
+    pembahasan: t`Baris Constant adalah $a = 5$ dan baris variabel $x$ adalah $b = 2$, sehingga $\hat{y} = a + bx = 5 + 2x$.`,
+  },
+  {
+    id: "sk-004",
+    slug: "spss-korelasi-regresi",
+    pertanyaan: t`Pada tabel Model Summary, R Square $= 0{,}64$. Tafsirannya adalah ...`,
+    pilihan: [
+      t`$64\%$ data berisi pencilan`,
+      t`Peluang $H_0$ benar adalah $64\%$`,
+      t`$64\%$ variasi $y$ dijelaskan oleh $x$`,
+      t`Kemiringan garis regresi adalah $0{,}64$`,
+    ],
+    benar: 2,
+    pembahasan: t`R Square adalah $r^2$, proporsi variasi $y$ yang dijelaskan oleh prediktor.`,
+  },
+  {
+    id: "sk-005",
+    slug: "spss-korelasi-regresi",
+    pertanyaan: t`Menu SPSS untuk membuat regresi linear sederhana adalah ...`,
+    pilihan: [
+      t`Analyze, Compare Means, Means`,
+      t`Analyze, Correlate, Bivariate`,
+      t`Analyze, Regression, Linear`,
+      t`Data, Select Cases`,
+    ],
+    benar: 2,
+    pembahasan: t`Regresi linear ada di Analyze, Regression, Linear. Bivariate adalah menu korelasi, dan Means menampilkan rata-rata per kelompok.`,
+  },
 ];
 
 // Peringatan otomatis (hanya saat pengembangan): slug soal yang tidak cocok dengan materi manapun.
