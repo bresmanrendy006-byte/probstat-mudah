@@ -1,5 +1,5 @@
 // src/app/dashboard/page.js
-// Dashboard pelajar: progres, skor kuis terbaru per materi, materi tersimpan, dan riwayat hitungan.
+// Dashboard pelajar: progres, skor kuis terbaru per materi, riwayat kuis, materi tersimpan, dan riwayat hitungan.
 
 import Link from "next/link";
 import { redirect } from "next/navigation";
@@ -45,6 +45,19 @@ function IkonBookmark() {
   );
 }
 
+function IkonBintang() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className="size-5 shrink-0 text-amber-400"
+    >
+      <path d="M12 2.5l2.9 6.1 6.6.8-4.9 4.6 1.3 6.6L12 17.3 6.1 20.6l1.3-6.6L2.5 9.4l6.6-.8L12 2.5Z" />
+    </svg>
+  );
+}
+
 export default async function Dashboard() {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();
@@ -62,7 +75,7 @@ export default async function Dashboard() {
     supabase.from("progres").select("slug").eq("user_id", id),
     supabase
       .from("skor_kuis")
-      .select("slug, nilai")
+      .select("slug, nilai, dibuat")
       .eq("user_id", id)
       .order("dibuat", { ascending: false })
       .limit(50),
@@ -105,6 +118,16 @@ export default async function Dashboard() {
   const rataRata = semuaSkorTerbaru.length
     ? Math.round(semuaSkorTerbaru.reduce((a, s) => a + s.nilai, 0) / semuaSkorTerbaru.length)
     : null;
+
+  // Riwayat kuis: 10 percobaan terakhir (semua percobaan, termasuk pengulangan).
+  // Bintang untuk satu percobaan bernilai tertinggi; bila sama, yang paling baru.
+  const riwayatKuis = (skor.data ?? []).slice(0, 10).map((s) => ({
+    slug: s.slug,
+    nilai: s.nilai,
+    tanggal: formatTanggal(s.dibuat),
+  }));
+  const nilaiTertinggi = riwayatKuis.length ? Math.max(...riwayatKuis.map((r) => r.nilai)) : null;
+  const indeksBintang = riwayatKuis.findIndex((r) => r.nilai === nilaiTertinggi);
 
   const selesaiSet = new Set((progres.data ?? []).map((p) => p.slug));
   const perKategori = daftar.map((k) => ({
@@ -329,6 +352,67 @@ export default async function Dashboard() {
           )}
         </section>
       </div>
+
+      {/* Riwayat kuis */}
+      <section className={`${kartu} p-5 sm:p-6`}>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">Riwayat kuis</h2>
+          <p className="text-xs text-ink/60">
+            10 percobaan terakhir. Bintang menandai nilai tertinggi.
+          </p>
+        </div>
+        {riwayatKuis.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-brand/25 p-5 text-center">
+            <p className="text-sm text-ink/70">
+              Belum ada percobaan kuis. Setiap kali kamu menyelesaikan kuis, hasilnya tercatat di sini.
+            </p>
+            <Link
+              href="/materi"
+              className="mt-3 inline-block rounded-full bg-lavender px-4 py-1.5 text-sm font-semibold transition hover:bg-sun"
+            >
+              Mulai kuis
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {riwayatKuis.map((r, i) => {
+              const lulus = r.nilai >= NILAI_LULUS;
+              const terbaik = i === indeksBintang;
+              return (
+                <li key={`${r.slug}-${i}`}>
+                  <Link
+                    href={`/materi/${r.slug}#kuis`}
+                    className="flex items-center gap-3 rounded-2xl bg-lavender/40 px-4 py-3 transition hover:bg-sun/50"
+                  >
+                    <span className="grid size-6 shrink-0 place-items-center">
+                      {terbaik && (
+                        <>
+                          <IkonBintang />
+                          <span className="sr-only">Nilai tertinggi</span>
+                        </>
+                      )}
+                    </span>
+                    <span className="min-w-0 flex-1">
+                      <span className="block truncate text-sm font-semibold">{judulDari(r.slug)}</span>
+                      <span className="block text-xs text-ink/60">{r.tanggal} WIB</span>
+                    </span>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
+                        lulus ? "bg-mint/40" : "bg-peach/50"
+                      }`}
+                    >
+                      {lulus ? "Lulus" : "Belum lulus"}
+                    </span>
+                    <span className="w-9 shrink-0 text-right font-display text-lg font-bold">
+                      {r.nilai}
+                    </span>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </section>
 
       {/* Riwayat hitungan */}
       <section className={`${kartu} p-5 sm:p-6`}>
