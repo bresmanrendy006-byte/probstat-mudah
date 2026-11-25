@@ -10,6 +10,7 @@ import Teks from "@/components/Teks";
 import ContohSoal from "@/components/ContohSoal";
 import Kuis from "@/components/Kuis";
 import AksiMateri from "@/components/AksiMateri";
+import CatatanMateri from "@/components/CatatanMateri";
 
 export async function generateMetadata({ params }) {
   const { slug } = await params;
@@ -74,6 +75,7 @@ export default async function IsiMateri({ params }) {
     m.rumus?.length > 0 && { id: "rumus", nama: "Rumus" },
     m.contoh?.length > 0 && { id: "contoh", nama: "Contoh soal" },
     soal.length > 0 && { id: "kuis", nama: "Kuis" },
+    { id: "catatan", nama: "Catatan" },
   ].filter(Boolean);
 
   return (
@@ -217,6 +219,16 @@ export default async function IsiMateri({ params }) {
           </div>
         </section>
       )}
+
+      {/* Catatan pribadi */}
+      <section id="catatan" className="mt-10 scroll-mt-28">
+        <JudulBagian ikon="✐" warna="bg-rose/60">
+          Catatanku
+        </JudulBagian>
+        <div className="mt-4">
+          <CatatanMateri key={slug} slug={slug} />
+        </div>
+      </section>
 
       {/* Sebelumnya / Berikutnya */}
       <nav aria-label="Pindah materi" className="mt-12 grid gap-4 sm:grid-cols-2">

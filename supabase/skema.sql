@@ -381,3 +381,44 @@ create policy "admin lihat semua jawaban" on public.jawaban_soal
 
 revoke all on public.jawaban_soal from anon;
 revoke update, delete on public.jawaban_soal from authenticated;
+
+-- =====================================================================
+-- 11. CATATAN PRIBADI (satu catatan per pengguna per materi)
+-- =====================================================================
+create table if not exists public.catatan (
+  id bigint generated always as identity primary key,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  slug text not null check (char_length(slug) between 1 and 100),
+  isi text not null check (char_length(isi) between 1 and 2000),
+  dibuat timestamptz not null default now(),
+  diubah timestamptz not null default now(),
+  unique (user_id, slug)
+);
+
+create index if not exists catatan_user_diubah_idx
+  on public.catatan (user_id, diubah desc);
+
+alter table public.catatan enable row level security;
+
+drop policy if exists "catatan: lihat milik sendiri" on public.catatan;
+create policy "catatan: lihat milik sendiri" on public.catatan
+  for select to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists "catatan: tambah milik sendiri" on public.catatan;
+create policy "catatan: tambah milik sendiri" on public.catatan
+  for insert to authenticated with check (user_id = (select auth.uid()));
+
+drop policy if exists "catatan: ubah milik sendiri" on public.catatan;
+create policy "catatan: ubah milik sendiri" on public.catatan
+  for update to authenticated
+  using (user_id = (select auth.uid())) with check (user_id = (select auth.uid()));
+
+drop policy if exists "catatan: hapus milik sendiri" on public.catatan;
+create policy "catatan: hapus milik sendiri" on public.catatan
+  for delete to authenticated using (user_id = (select auth.uid()));
+
+drop policy if exists "admin lihat semua catatan" on public.catatan;
+create policy "admin lihat semua catatan" on public.catatan
+  for select to authenticated using (public.is_admin());
+
+revoke all on public.catatan from anon;
