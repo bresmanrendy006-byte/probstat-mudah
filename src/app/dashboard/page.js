@@ -73,7 +73,7 @@ export default async function Dashboard() {
   // jadi tanpa filter ini dashboard admin akan menampilkan data orang lain.
   // Skor diambil lebih banyak (50) lalu disaring per materi di bawah,
   // supaya mengulang satu kuis tidak menghabiskan jatah materi lain.
-  const [profil, progres, skor, bookmark, riwayat, jawaban] = await Promise.all([
+  const [profil, progres, skor, bookmark, riwayat, jawaban, catatan, skorSemua] = await Promise.all([
     supabase.from("profiles").select("nama").eq("id", id).maybeSingle(),
     supabase.from("progres").select("slug").eq("user_id", id),
     supabase
@@ -100,7 +100,15 @@ export default async function Dashboard() {
       .eq("user_id", id)
       .order("dibuat", { ascending: false })
       .limit(500),
+    supabase
+      .from("catatan")
+      .select("slug, isi, diubah")
+      .eq("user_id", id)
+      .order("diubah", { ascending: false })
+      .limit(5),
+    supabase.from("skor_kuis").select("slug, nilai").eq("user_id", id).limit(1000),
   ]);
+
   const tabelBelumAda = [profil, progres, skor, bookmark].some((r) => r.error);
 
   // Riwayat: ambil dua angka hasil pertama untuk ditampilkan di daftar
@@ -165,12 +173,63 @@ export default async function Dashboard() {
     .sort((a, b) => b.salah - a.salah || b.persen - a.persen || a.id.localeCompare(b.id))
     .slice(0, 5);
 
+  // Catatan terakhir: cuplikan 120 karakter, spasi dan baris baru dipadatkan
+  const catatanTampil = (catatan.data ?? []).map((c) => {
+    const rata = c.isi.replace(/\s+/g, " ").trim();
+    return {
+      slug: c.slug,
+      cuplikan: rata.length > 120 ? `${rata.slice(0, 120).trimEnd()}…` : rata,
+      tanggal: formatTanggal(c.diubah),
+    };
+  });
+
   const selesaiSet = new Set((progres.data ?? []).map((p) => p.slug));
   const perKategori = daftar.map((k) => ({
     nama: k.kategori,
     total: k.materi.length,
     selesai: k.materi.filter((m) => selesaiSet.has(m.slug)).length,
   }));
+
+  // Lencana per bab. Nilai terbaik per materi diambil dari semua percobaan (bukan hanya 50 terbaru).
+  const terbaikPerMateri = new Map();
+  for (const s of skorSemua.data ?? []) {
+    if ((terbaikPerMateri.get(s.slug) ?? -1) < s.nilai) terbaikPerMateri.set(s.slug, s.nilai);
+  }
+  const lencanaBab = daftar.map((k) => {
+    const ada = k.materi.filter((m) => m.isi);
+    const punya = ada.length > 0;
+    const terbaik = (m) => terbaikPerMateri.get(m.slug) ?? -1;
+    return {
+      nama: k.kategori,
+      lencana: [
+        {
+          kode: "selesai",
+          nama: "Selesai",
+          ikon: "✓",
+          warna: "bg-mint/50",
+          syarat: "Tandai semua materi di bab ini selesai",
+          diraih: punya && ada.every((m) => selesaiSet.has(m.slug)),
+        },
+        {
+          kode: "lulus",
+          nama: "Lulus",
+          ikon: "★",
+          warna: "bg-sun/70",
+          syarat: `Nilai kuis terbaik tiap materi minimal ${NILAI_LULUS}`,
+          diraih: punya && ada.every((m) => terbaik(m) >= NILAI_LULUS),
+        },
+        {
+          kode: "sempurna",
+          nama: "Sempurna",
+          ikon: "♛",
+          warna: "bg-rose/60",
+          syarat: "Dapat nilai 100 di kuis tiap materi",
+          diraih: punya && ada.every((m) => terbaik(m) === 100),
+        },
+      ],
+    };
+  });
+
   const total = semua.length;
   const selesai = perKategori.reduce((a, k) => a + k.selesai, 0);
   const persen = total ? Math.round((selesai / total) * 100) : 0;
@@ -297,6 +356,49 @@ export default async function Dashboard() {
             </div>
           );
         })}
+      </section>
+
+      {/* Lencana per bab */}
+      <section className={`${kartu} p-5 sm:p-6`}>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">Lencana</h2>
+          <p className="text-xs text-ink/60">Kumpulkan tiga lencana di setiap bab</p>
+        </div>
+        {skorSemua.error ? (
+          <p role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
+            Lencana belum bisa dihitung. Coba muat ulang halaman.
+          </p>
+        ) : (
+          <ul className="space-y-4">
+            {lencanaBab.map((b) => {
+              const berikut = b.lencana.find((l) => !l.diraih);
+              return (
+                <li key={b.nama} className="rounded-2xl bg-lavender/40 p-4">
+                  <p className="font-bold">{b.nama}</p>
+                  <ul className="mt-3 flex flex-wrap gap-2">
+                    {b.lencana.map((l) => (
+                      <li
+                        key={l.kode}
+                        className={`inline-flex items-center gap-1.5 rounded-full px-3.5 py-1.5 text-sm font-bold ${
+                          l.diraih ? l.warna : "bg-slate-200/70 text-ink/40"
+                        }`}
+                      >
+                        <span aria-hidden="true">{l.diraih ? l.ikon : "🔒"}</span>
+                        {l.nama}
+                        <span className="sr-only">{l.diraih ? " (diraih)" : " (belum diraih)"}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="mt-3 text-xs text-ink/70">
+                    {berikut
+                      ? `Berikutnya, lencana ${berikut.nama}: ${berikut.syarat}.`
+                      : "Semua lencana bab ini sudah diraih. Hebat!"}
+                  </p>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </section>
 
       <div className="grid gap-5 md:grid-cols-2">
@@ -432,6 +534,46 @@ export default async function Dashboard() {
                   <span className="shrink-0 rounded-full bg-peach/50 px-2 py-0.5 text-xs font-bold">
                     {q.persen}% salah
                   </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {/* Catatan terakhir */}
+      <section className={`${kartu} p-5 sm:p-6`}>
+        <div className="mb-4 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="font-bold">Catatan terakhir</h2>
+          <p className="text-xs text-ink/60">5 catatan yang terakhir kamu ubah</p>
+        </div>
+        {catatan.error ? (
+          <p role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
+            Catatan belum bisa dibaca. Coba muat ulang halaman.
+          </p>
+        ) : catatanTampil.length === 0 ? (
+          <div className="rounded-2xl border border-dashed border-brand/25 p-5 text-center">
+            <p className="text-sm text-ink/70">
+              Belum ada catatan. Tulis catatan di bagian Catatanku pada halaman materi.
+            </p>
+            <Link
+              href="/materi"
+              className="mt-3 inline-block rounded-full bg-lavender px-4 py-1.5 text-sm font-semibold transition hover:bg-sun"
+            >
+              Pilih materi
+            </Link>
+          </div>
+        ) : (
+          <ul className="space-y-2">
+            {catatanTampil.map((c) => (
+              <li key={c.slug}>
+                <Link
+                  href={`/materi/${c.slug}#catatan`}
+                  className="block rounded-2xl bg-lavender/40 px-4 py-3 transition hover:bg-sun/50"
+                >
+                  <span className="block truncate text-sm font-semibold">{judulDari(c.slug)}</span>
+                  <span className="mt-1 block break-words text-sm text-ink/80">{c.cuplikan}</span>
+                  <span className="mt-1 block text-xs text-ink/60">Diubah {c.tanggal} WIB</span>
                 </Link>
               </li>
             ))}
