@@ -110,7 +110,7 @@ export function kekuatanKorelasi(r) {
 export function tafsirPValue(p, alpha = 0.05) {
   const teksP = p < 0.001 ? "p < 0,001" : `p = ${angka(p, 3)}`;
   if (p < alpha) {
-    return `${teksP}, lebih kecil dari ${angka(alpha)}, jadi hasilnya signifikan (H0 ditolak).`;
+    return `${teksP}, lebih kecil dari ${angka(alpha)}, jadi hasilnya signifikan (H₀ ditolak).`;
   }
-  return `${teksP}, tidak lebih kecil dari ${angka(alpha)}, jadi hasilnya tidak signifikan (H0 tidak ditolak).`;
+  return `${teksP}, tidak lebih kecil dari ${angka(alpha)}, jadi hasilnya tidak signifikan (H₀ tidak ditolak).`;
 }

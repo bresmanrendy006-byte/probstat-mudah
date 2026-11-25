@@ -9,11 +9,16 @@ const t = String.raw;
 
 // ---------- Fungsi bantu ----------
 
-// Bulatkan, desimal pakai titik (sama dengan proses.js)
-function rapi(x, d = 4) {
+// Bulatkan, desimal pakai koma LaTeX {,} (hanya untuk di dalam $...$)
+function rapi(x, d = 6) {
   if (!Number.isFinite(x)) return String(x);
   const k = 10 ** d;
-  return String(Math.round(x * k) / k);
+  return String(Math.round(x * k) / k).replace(".", "{,}");
+}
+
+// Angka masukan apa adanya, desimal pakai koma LaTeX
+function kt(x) {
+  return String(x).replace(".", "{,}");
 }
 
 // Peluang dalam LaTeX; yang sangat kecil ditulis bentuk ilmiah
@@ -21,7 +26,7 @@ function tex(x) {
   if (x === 0) return "0";
   if (x < 0.0001) {
     const [m, e] = x.toExponential(3).split("e");
-    return `${m} \\times 10^{${Number(e)}}`;
+    return `${m.replace(".", "{,}")} \\times 10^{${Number(e)}}`;
   }
   return rapi(x);
 }
@@ -110,13 +115,13 @@ export function prosesBinomial(teks) {
     ],
     langkah: [
       "# Distribusi binomial",
-      t`Ciri: percobaan diulang $n = ${n}$ kali, peluang sukses tiap percobaan $p = ${p}$, dan yang dihitung banyaknya sukses $X$.`,
+      t`Ciri: percobaan diulang $n = ${n}$ kali, peluang sukses tiap percobaan $p = ${kt(p)}$, dan yang dihitung banyaknya sukses $X$.`,
       t`Rumus: $P(X = k) = \binom{n}{k} \, p^k \, (1-p)^{n-k}$`,
-      t`Masukkan angka: $P(X = ${k}) = \binom{${n}}{${k}} \, (${p})^{${k}} \, (${rapi(1 - p)})^{${n - k}}$`,
+      t`Masukkan angka: $P(X = ${k}) = \binom{${n}}{${k}} \, (${kt(p)})^{${k}} \, (${rapi(1 - p)})^{${n - k}}$`,
       t`Hasil: $P(X = ${k}) = ${tex(pSama)}$`,
       t`Kumulatif: $P(X \le ${k}) = \sum_{i=0}^{${k}} P(X = i) = ${tex(pKurang)}$`,
       t`Kumulatif: $P(X \ge ${k}) = \sum_{i=${k}}^{${n}} P(X = i) = ${tex(pLebih)}$`,
-      t`Rata-rata: $E(X) = np = ${n} \times ${p} = ${rapi(rata)}$`,
+      t`Rata-rata: $E(X) = np = ${n} \times ${kt(p)} = ${rapi(rata)}$`,
       t`Varians: $Var(X) = np(1-p) = ${rapi(varians)}$`,
       t`Simpangan baku: $\sigma = \sqrt{Var(X)} = ${rapi(simpangan)}$`,
     ],
@@ -168,9 +173,9 @@ export function prosesPoisson(teks) {
     ],
     langkah: [
       "# Distribusi Poisson",
-      t`Ciri: banyaknya kejadian $X$ dalam satu selang, dengan rata-rata $\lambda = ${lam}$ kejadian per selang.`,
+      t`Ciri: banyaknya kejadian $X$ dalam satu selang, dengan rata-rata $\lambda = ${kt(lam)}$ kejadian per selang.`,
       t`Rumus: $P(X = k) = \dfrac{e^{-\lambda} \, \lambda^k}{k!}$`,
-      t`Masukkan angka: $P(X = ${k}) = \dfrac{e^{-${lam}} \times ${lam}^{${k}}}{${k}!}$`,
+      t`Masukkan angka: $P(X = ${k}) = \dfrac{e^{-${kt(lam)}} \times ${kt(lam)}^{${k}}}{${k}!}$`,
       t`Hasil: $P(X = ${k}) = ${tex(pSama)}$`,
       t`Kumulatif: $P(X \le ${k}) = \sum_{i=0}^{${k}} P(X = i) = ${tex(pKurang)}$`,
       t`Kumulatif: $P(X \ge ${k}) = 1 - P(X \le ${k - 1}) = ${tex(pLebih)}$`,
@@ -205,18 +210,18 @@ export function prosesNormal(teks) {
     const p = cdfNormal(zb) - cdfNormal(za);
     return {
       ringkasan: [
-        { label: t`$P(${a} \le X \le ${b})$`, nilai: `$${tex(p)}$` },
+        { label: t`$P(${kt(a)} \le X \le ${kt(b)})$`, nilai: `$${tex(p)}$` },
         { label: t`Skor z batas bawah ($z_1$)`, nilai: `$${rapi(za)}$` },
         { label: t`Skor z batas atas ($z_2$)`, nilai: `$${rapi(zb)}$` },
       ],
       langkah: [
         "# Distribusi normal",
-        t`Data berdistribusi normal dengan rata-rata $\mu = ${mu}$ dan simpangan baku $\sigma = ${sigma}$.`,
+        t`Data berdistribusi normal dengan rata-rata $\mu = ${kt(mu)}$ dan simpangan baku $\sigma = ${kt(sigma)}$.`,
         t`Rumus skor z: $z = \dfrac{x - \mu}{\sigma}$`,
-        t`Batas bawah: $z_1 = \dfrac{${a} - ${mu}}{${sigma}} = ${rapi(za)}$`,
-        t`Batas atas: $z_2 = \dfrac{${b} - ${mu}}{${sigma}} = ${rapi(zb)}$`,
-        t`Peluang di antara dua batas: $P(${a} \le X \le ${b}) = P(${rapi(za)} \le Z \le ${rapi(zb)}) = \Phi(${rapi(zb)}) - \Phi(${rapi(za)})$`,
-        t`Hasil: $P(${a} \le X \le ${b}) = ${tex(p)}$`,
+        t`Batas bawah: $z_1 = \dfrac{${kt(a)} - ${kt(mu)}}{${kt(sigma)}} = ${rapi(za)}$`,
+        t`Batas atas: $z_2 = \dfrac{${kt(b)} - ${kt(mu)}}{${kt(sigma)}} = ${rapi(zb)}$`,
+        t`Peluang di antara dua batas: $P(${kt(a)} \le X \le ${kt(b)}) = P(${rapi(za)} \le Z \le ${rapi(zb)}) = \Phi(${rapi(zb)}) - \Phi(${rapi(za)})$`,
+        t`Hasil: $P(${kt(a)} \le X \le ${kt(b)}) = ${tex(p)}$`,
         `Catatan: Φ adalah peluang kumulatif distribusi normal baku (yang biasa dibaca dari tabel z).`,
       ],
       grafik: { jenis: "normal", mu, sigma, dari: a, sampai: b },
@@ -236,15 +241,15 @@ export function prosesNormal(teks) {
   return {
     ringkasan: [
       { label: t`Skor z`, nilai: `$${rapi(z)}$` },
-      { label: t`$P(X \le ${x})$`, nilai: `$${tex(pKurang)}$` },
-      { label: t`$P(X \ge ${x})$`, nilai: `$${tex(pLebih)}$` },
+      { label: t`$P(X \le ${kt(x)})$`, nilai: `$${tex(pKurang)}$` },
+      { label: t`$P(X \ge ${kt(x)})$`, nilai: `$${tex(pLebih)}$` },
     ],
     langkah: [
       "# Distribusi normal",
-      t`Data berdistribusi normal dengan rata-rata $\mu = ${mu}$ dan simpangan baku $\sigma = ${sigma}$.`,
-      t`Skor z: $z = \dfrac{x - \mu}{\sigma} = \dfrac{${x} - ${mu}}{${sigma}} = ${rapi(z)}$`,
-      t`Peluang di bawah $x$: $P(X \le ${x}) = P(Z \le ${rapi(z)}) = \Phi(${rapi(z)}) = ${tex(pKurang)}$`,
-      t`Peluang di atas $x$: $P(X \ge ${x}) = 1 - P(X \le ${x}) = ${tex(pLebih)}$`,
+      t`Data berdistribusi normal dengan rata-rata $\mu = ${kt(mu)}$ dan simpangan baku $\sigma = ${kt(sigma)}$.`,
+      t`Skor z: $z = \dfrac{x - \mu}{\sigma} = \dfrac{${kt(x)} - ${kt(mu)}}{${kt(sigma)}} = ${rapi(z)}$`,
+      t`Peluang di bawah $x$: $P(X \le ${kt(x)}) = P(Z \le ${rapi(z)}) = \Phi(${rapi(z)}) = ${tex(pKurang)}$`,
+      t`Peluang di atas $x$: $P(X \ge ${kt(x)}) = 1 - P(X \le ${kt(x)}) = ${tex(pLebih)}$`,
       `Catatan: Φ adalah peluang kumulatif distribusi normal baku (yang biasa dibaca dari tabel z).`,
     ],
     grafik: { jenis: "normal", mu, sigma, dari: null, sampai: x },

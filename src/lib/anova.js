@@ -11,23 +11,24 @@ const NAMA = ["A", "B", "C", "D", "E"];
 
 // ---------- Fungsi bantu tampilan ----------
 
-function rapi(x, d = 4) {
+function rapi(x, d = 6) {
   if (!Number.isFinite(x)) return String(x);
   const k = 10 ** d;
-  return String(Math.round(x * k) / k);
+  return String(Math.round(x * k) / k).replace(".", "{,}");
 }
 
 // Untuk kalimat biasa (desimal pakai koma)
 function kom(x, d = 2) {
-  return rapi(x, d).replace(".", ",");
+  if (!Number.isFinite(x)) return String(x);
+  const k = 10 ** d;
+  return String(Math.round(x * k) / k).replace(".", ",");
 }
 
-// Peluang dalam LaTeX; yang sangat kecil ditulis bentuk ilmiah
 function tex(x) {
   if (x === 0) return "0";
   if (x < 0.0001) {
     const [m, e] = x.toExponential(3).split("e");
-    return `${m} \\times 10^{${Number(e)}}`;
+    return `${m.replace(".", "{,}")} \\times 10^{${Number(e)}}`;
   }
   return rapi(x);
 }

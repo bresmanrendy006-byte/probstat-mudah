@@ -12,7 +12,11 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="id" className={`${display.variable} ${sans.variable}`}>
+    <html
+      lang="id"
+      data-scroll-behavior="smooth"
+      className={`${display.variable} ${sans.variable}`}
+    >
       <body className="text-ink antialiased min-h-screen">
         <KerangkaUmum>{children}</KerangkaUmum>
       </body>

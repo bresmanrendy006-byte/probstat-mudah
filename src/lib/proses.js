@@ -17,16 +17,22 @@ const t = String.raw;
 
 // ---------- Fungsi bantu ----------
 
-// Bulatkan ke 4 angka desimal dan buang nol di belakang
+// Bulatkan ke 4 angka desimal, buang nol di belakang, desimal memakai koma (untuk di dalam $...$)
 function rapi(x) {
   if (!Number.isFinite(x)) return String(x);
-  return String(Math.round(x * 10000) / 10000);
+  return String(Math.round(x * 1000000) / 1000000).replace(".", "{,}");
+}
+
+// Ubah titik desimal jadi koma tanpa membulatkan (untuk di dalam $...$)
+function koma(x) {
+  return String(x).replace(".", "{,}");
 }
 
 // Daftar angka dalam LaTeX; kalau terlalu panjang, dipersingkat
 function daftar(arr, maks = 15) {
-  if (arr.length <= maks) return arr.join(", ");
-  return `${arr.slice(0, 10).join(", ")}, \\ldots, ${arr[arr.length - 1]}`;
+  const k = arr.map(koma);
+  if (k.length <= maks) return k.join(", ");
+  return `${k.slice(0, 10).join(", ")}, \\ldots, ${k[k.length - 1]}`;
 }
 
 // Median dari data yang SUDAH terurut
@@ -72,7 +78,7 @@ export function prosesDasar(teks) {
       };
     }
 
-    const teksHasil = format(nilai, { precision: 12 });
+    const teksHasil = format(nilai, { precision: 12 }).replace(".", "{,}");
 
     // Ubah ekspresi ketikan menjadi penulisan matematika (pecahan, akar, dst.)
     let tex = ekspresi;
@@ -190,7 +196,7 @@ export function prosesStatistika(teks) {
       .filter(([, jml]) => jml === terbanyak)
       .map(([nilai]) => nilai)
       .sort((a, b) => a - b);
-    modus = daftarModus.join(", ");
+    modus = daftarModus.map(koma).join(", ");    
     nilaiModus = `$${modus}$`;
     langkahModus = `Modus: nilai yang paling sering muncul (${terbanyak} kali), yaitu $${modus}$.`;
   }
