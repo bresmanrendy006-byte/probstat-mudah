@@ -3,6 +3,8 @@
 // src/components/KerangkaUmum.js
 // Membungkus tampilan situs umum (navbar, latar, footer).
 // Di halaman /admin, semuanya disembunyikan karena admin punya tampilan sendiri.
+// Saat dicetak (Ctrl+P), navbar, latar, dan footer disembunyikan (print:hidden).
+// Kelas "contents" membuat pembungkus tidak memengaruhi tata letak di layar.
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -37,23 +39,25 @@ export default function KerangkaUmum({ children }) {
       {/* Tampil hanya saat ditekan Tab: lompat langsung ke isi halaman */}
       <a
         href="#konten"
-        className="sr-only rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200]"
+        className="sr-only rounded-full bg-brand px-4 py-2 text-sm font-semibold text-white focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] print:hidden"
       >
         Lewati ke konten
       </a>
 
-      <LatarBelakang />
-      <ProgresScroll />
-      <Navbar />
+      <div className="contents print:hidden">
+        <LatarBelakang />
+        <ProgresScroll />
+        <Navbar />
+      </div>
 
       <main
         id="konten"
-        className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-10"
+        className="mx-auto w-full max-w-6xl flex-1 overflow-x-clip px-4 py-10 print:max-w-none print:overflow-visible print:p-0"
       >
         {children}
       </main>
 
-      <footer className="border-t border-brand/15 bg-white/70 backdrop-blur">
+      <footer className="border-t border-brand/15 bg-white/70 backdrop-blur print:hidden">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="font-display text-lg font-bold">
