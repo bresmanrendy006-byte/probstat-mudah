@@ -281,6 +281,17 @@ function FormLogin() {
             )}
           </div>
 
+          {!daftar && (
+            <p className="-mt-2 text-right text-sm">
+              <Link
+                href="/lupa-sandi"
+                className="font-semibold text-brand underline underline-offset-2"
+              >
+                Lupa kata sandi?
+              </Link>
+            </p>
+          )}
+
           {galat && (
             <div role="alert" className="rounded-2xl bg-rose/40 px-4 py-3 text-sm font-semibold">
               <p>{galat}</p>
