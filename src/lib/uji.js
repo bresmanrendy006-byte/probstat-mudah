@@ -223,12 +223,12 @@ export function prosesUjiT({ jenis, a, b, mu0, alpha }) {
       ],
       langkahHipotesis: [
         t`Uji t satu sampel: apakah rata-rata populasi berbeda dari nilai tertentu?`,
-        t`$H_0: \mu = ${nol}$ dan $H_1: \mu \ne ${nol}$ (dua arah)`,
+        t`$H_0: \mu = ${rapi(nol)}$ dan $H_1: \mu \ne ${rapi(nol)}$ (dua arah)`,
       ],
       langkahHitung: [
         t`Statistik data: $n = ${n}$, $\bar{x} = ${rapi(mean)}$, $s = ${rapi(sd)}$`,
         t`Rumus: $t = \dfrac{\bar{x} - \mu_0}{s / \sqrt{n}}$`,
-        t`Masukkan angka: $t = \dfrac{${rapi(mean)} - ${nol}}{${rapi(sd)} / \sqrt{${n}}} = \dfrac{${rapi(mean - nol)}}{${rapi(se)}} = ${rapi(nilaiT)}$`,
+        t`Masukkan angka: $t = \dfrac{${rapi(mean)} - ${rapi(nol)}}{${rapi(sd)} / \sqrt{${n}}} = \dfrac{${rapi(mean - nol)}}{${rapi(se)}} = ${rapi(nilaiT)}$`,
         t`Derajat bebas: $db = n - 1 = ${df}$`,
       ],
       arti: (tolak) =>
