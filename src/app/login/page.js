@@ -3,7 +3,7 @@
 // src/app/login/page.js
 // Halaman Masuk / Daftar. Tersambung Supabase; pengalihan setelah masuk berdasarkan role.
 
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
@@ -96,6 +96,48 @@ function FormLogin() {
   const [sudahAda, setSudahAda] = useState(false);
   const [proses, setProses] = useState(false);
 
+    // True bila pengguna perlu diberi tombol "Kirim ulang email konfirmasi".
+  const [perluKonfirmasi, setPerluKonfirmasi] = useState(false);
+  const [kirimUlang, setKirimUlang] = useState(false);
+  const [sisa, setSisa] = useState(0);
+
+  // Hitung mundur supaya tombol tidak ditekan berulang (kuota email kecil)
+  useEffect(() => {
+    if (sisa <= 0) return;
+    const id = setTimeout(() => setSisa(sisa - 1), 1000);
+    return () => clearTimeout(id);
+  }, [sisa]);
+
+  async function kirimUlangEmail() {
+    if (sisa > 0 || kirimUlang) return;
+    if (!email.trim()) {
+      setGalat("Isi emailnya dulu di kolom Email.");
+      return;
+    }
+    setGalat("");
+    setInfo("");
+    setKirimUlang(true);
+    const supabase = createClient();
+    const { error } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: { emailRedirectTo: `${window.location.origin}/auth/confirm` },
+    });
+    setKirimUlang(false);
+    setSisa(60);
+    if (error) {
+      console.warn("Galat kirim ulang:", error.code, error.status);
+      setGalat(
+        pesanGalat[error.code] ?? "Gagal mengirim ulang email. Tunggu sebentar, lalu coba lagi."
+      );
+      return;
+    }
+    // Pesan sengaja netral (tidak membocorkan apakah email terdaftar).
+    setInfo(
+      "Jika email itu belum dikonfirmasi, email konfirmasi baru sudah dikirim. Cek kotak masuk dan folder spam, lalu buka link-nya di browser yang sama dengan yang kamu pakai sekarang."
+    );
+  }
+
   const aturanNama = [[nama.trim().length >= 2 && nama.trim().length <= 50, "Nama 2 sampai 50 karakter"]];
   const aturanEmail = [
     [/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim()), "Format email valid, contoh: nama@email.com"],
@@ -113,6 +155,7 @@ function FormLogin() {
     setGalat("");
     setInfo("");
     setSudahAda(false);
+    setPerluKonfirmasi(false);
   }
 
   async function kirim(e) {
@@ -120,6 +163,7 @@ function FormLogin() {
     setGalat("");
     setInfo("");
     setSudahAda(false);
+    setPerluKonfirmasi(false);
 
     if (daftar && !semuaOk) {
       setGalat("Lengkapi dulu semua aturan di bawah kolom isian.");
@@ -162,6 +206,8 @@ function FormLogin() {
         setInfo(
           "Pendaftaran berhasil. Cek emailmu (termasuk folder spam) dan klik link konfirmasi, lalu masuk."
         );
+        setPerluKonfirmasi(true);
+        setSisa(60); // email baru saja terkirim, jadi tunggu dulu sebelum kirim ulang
       }
     } else {
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -171,6 +217,7 @@ function FormLogin() {
       if (error) {
         console.warn("Galat masuk:", error.code, error.status);
         setGalat(pesanGalat[error.code] ?? "Gagal masuk. Coba lagi.");
+        if (error.code === "email_not_confirmed") setPerluKonfirmasi(true);
       } else {
         // Baca role dari database: admin ke /admin, pelajar ke /dashboard.
         const { data: profil } = await supabase
@@ -310,6 +357,21 @@ function FormLogin() {
             <p role="status" className="rounded-2xl bg-mint/30 px-4 py-3 text-sm font-semibold">
               {info}
             </p>
+          )}
+
+          {perluKonfirmasi && (
+            <button
+              type="button"
+              onClick={kirimUlangEmail}
+              disabled={sisa > 0 || kirimUlang}
+              className="w-full rounded-full border border-brand/20 bg-white py-2.5 text-sm font-semibold transition hover:bg-sun/50 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:bg-white"
+            >
+              {kirimUlang
+                ? "Mengirim..."
+                : sisa > 0
+                  ? `Kirim ulang email konfirmasi (${sisa} detik)`
+                  : "Kirim ulang email konfirmasi"}
+            </button>
           )}
 
           {daftar && (
