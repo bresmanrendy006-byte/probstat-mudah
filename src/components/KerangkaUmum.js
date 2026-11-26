@@ -20,6 +20,7 @@ const tautanFooter = [
   { href: "/simulasi", nama: "Simulasi" },
   { href: "/video", nama: "Video" },
   { href: "/kalkulator", nama: "Kalkulator" },
+  { href: "/cheat-sheet", nama: "Cheat Sheet" },
 ];
 
 const tautanLegal = [

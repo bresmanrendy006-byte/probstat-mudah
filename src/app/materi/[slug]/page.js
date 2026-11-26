@@ -271,6 +271,12 @@ export default async function IsiMateri({ params }) {
           >
             {kalk ? `Coba di Kalkulator: ${kalk.nama}` : "Buka Kalkulator"}
           </Link>
+          <Link
+            href={`/cheat-sheet/${slug}`}
+            className="ml-2 mt-4 inline-block rounded-full bg-white/20 px-6 py-2.5 font-semibold text-white transition hover:-translate-y-0.5 hover:bg-white/30"
+          >
+            Cheat sheet materi ini
+          </Link>
         </div>
       </div>
     </div>
